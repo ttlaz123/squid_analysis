@@ -29,6 +29,16 @@ def read_ivsrc(srcn):
         ball = np.array(ball)
     return ball
 
+def get_rsservo_data(dir_path):
+    '''
+    input: path/to/mce_file
+    output: retrieves rsservo data
+    '''
+    rsservo = glob.glob(f'{dir_path}/*_rsservo.bias')[0]
+    rsservo = os.path.join(rsservo)
+    print('Reading: ' + rsservo)
+
+
 def get_sq1_tune_data(dir_path):
     '''
     input: path/to/mce_file
