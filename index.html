@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Device Current Squid Tuning Analysis</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <!-- Add my custom pa>er script -->
+    <script type="text/javascript" src="scripts/pager.js"></script>
+    <link rel="stylesheet" type="text/css" href="scripts/pager.css">
+
+    <header>
+        <h1>>Device Current Squid Tuning Analysis</h1>
+
+        <time datetime="2023-05-25" class="published updated">
+            2023 May 25
+        </time> —
+        Tom Liu, Cheng Zhang
+    </header>
+
+    <hr>
+
+
+    <section>
+        <figure>
+            <img alt="Tuning column" id="col" src="#" onerror="javascript:this.src='dne.png'" />
+            <figcaption>
+
+            </figcaption>
+            <script type="text/javascript">
+                function pad(num, size) {
+                    num = num.toString();
+                    while (num.length < size) num = "0" + num;
+                    return num;
+                }
+                const rows = [];
+                const cols = [];
+                startcols = 0
+                numrows = 41
+                numcols = 32
+                for (let i = 0; i < numrows; i++) {
+                    s = pad(i, 1);
+
+                    rows[i] = s.concat('|', s);
+
+                }
+
+                for (let i = startcols; i < numcols; i++) {
+                    s = pad(i, 1);
+
+                    cols[i - startcols] = s.concat('|', s);
+
+                }
+                pager.link("#col",
+                    {
+
+                        'Col|col': cols,
+                        /*
+                        'Run Name|run': [
+                            'LC_dark_FPU_250mK_datamode1_run1|LC_dark_FPU_250mK_datamode1_run1',
+                            'LC_dark_FPU_250mK_datamode1_run2|LC_dark_FPU_250mK_datamode1_run2',
+                            'Both|LC_dark_FPU_250mK_datamode1_run1__LC_dark_FPU_250mK_datamode1_run2'
+                        ]
+                        */
+                    },
+                    function (params) {
+                        ctime = "1684269423"
+                        name = "./output_data/" + ctime + '_icminmax_summary_col' +
+                            params.col + '.png';
+                        console.log(name);
+                        return name;
+
+
+                    });
+                pager.setparams(
+                    {
+                        'col': '0',
+
+                    }
+                );
+
+            </script>
+
+        </figure>
+        <!-- A
+
+
+        <figure>
+            <img alt="All Curves In Channel, Uncalibrated Data" id="channel" src="#" />
+            <figcaption>
+
+            </figcaption>
+            <script type="text/javascript">
+                function pad(num, size) {
+                    num = num.toString();
+                    while (num.length < size) num = "0" + num;
+                    return num;
+                }
+                colss = [];
+                startcols = 16
+                numcols = 32;
+
+                for (let i = startcols; i < numcols; i++) {
+                    s = pad(i, 2);
+
+                    colss[i - startcols] = s.concat('|', s);
+
+                }
+                pager.link("#channel",
+                    {
+                        'Y Limit|ylim': [
+                            'Yes|[-15000.0, 15000.0]',
+                            'None|None'
+                        ],
+                        'Filter|filter': [
+                            'None|0',
+                            'No Flats|1',
+                            'Flats only|2',
+                        ],
+                        'Col|col': colss,
+                        'Run Name|run': [
+                            'LC_dark_FPU_250mK_datamode1_run1|LC_dark_FPU_250mK_datamode1_run1',
+                            'LC_dark_FPU_250mK_datamode1_run2|LC_dark_FPU_250mK_datamode1_run2',
+                        ]
+                    },
+                    function (params) {
+                        name = "code/output_data/" + params.run + '_filter' + params.filter +
+                            '_channels' + params.col + '_ylim' + params.ylim + '.png';
+                        console.log(name)
+                        return name;
+
+
+                    });
+                pager.setparams(
+                    {
+                        'ylim': 'None',
+                        'filter': '0',
+                        'col': '16',
+                        'run': 'LC_dark_FPU_250mK_datamode1_run1'
+
+                    }
+                );
+
+            </script>
+
+        </figure>
+     -->
+    </section>
+
+
+</body>
