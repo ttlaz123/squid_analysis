@@ -504,7 +504,7 @@ def main():
     args = parser.parse_args()
 
 
-    cols = range(0,16)
+    cols = range(17,32)
     rows = range(0, 40)
 
 
