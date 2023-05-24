@@ -540,7 +540,7 @@ def ic_driver(cfg, sa_data, sa_runfile, sq1df, sq1_runfile, ctime=None,
                 optimal_bias, row, col, grid=optimal_bias_grid)
             crosstalk_bias_grid = fill_grid_data(
                 crosstalk_bias, row, col, grid=crosstalk_bias_grid)
-
+    print('plotting grids...')
     pd.tile_plot(len(rows), len(cols), ic_col_grid,
                  'Ic,col (uA)', str(ctime)+'_Ic_col')
     pd.tile_plot(len(rows), len(cols), ic_max_grid,
@@ -677,4 +677,7 @@ def main():
 
 
 if __name__ == '__main__':
+    time0 = time.time()
     main()
+    time1 = time.time()
+    print("Analysis complete, time elapsed (s): " + str(time1-time0))
