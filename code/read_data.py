@@ -35,9 +35,18 @@ def get_rsservo_data(dir_path):
     output: retrieves rsservo data
     '''
     rsservo = glob.glob(f'{dir_path}/*_rsservo.bias')[0]
-    rsservo = os.path.join(rsservo)
-    print('Reading: ' + rsservo)
-
+    rsservo_path = os.path.join(rsservo)
+    print('Reading: ' + rsservo_path)
+    try:
+        rsservo_df = pd.read_csv(rsservo_path, delim_whitespace=True,
+                    on_bad_lines='warn', index_col=False)
+    except TypeError:
+        rsservo_df = pd.read_csv(rsservo_path, delim_whitespace=True,
+                    error_bad_lines=False, index_col=False)
+    rsservo_file = rsservo_path.replace('.bias', '.run')
+    print('Reading: ' + rsservo_file)
+    rsservo_runfile = mce_data.MCERunfile(rsservo_file)
+    return rsservo_df, rsservo_runfile  
 
 def get_sq1_tune_data(dir_path):
     '''
@@ -47,8 +56,12 @@ def get_sq1_tune_data(dir_path):
     sq1_tune = glob.glob(f'{dir_path}/*_sq1servo_sa.bias')[0]
     sq1_data = os.path.join(sq1_tune)
     print('Reading: ' + sq1_data)
-    sq1df = pd.read_csv(sq1_data, delim_whitespace=True,
+    try:
+        sq1df = pd.read_csv(sq1_data, delim_whitespace=True,
                     on_bad_lines='warn', index_col=False)
+    except TypeError:
+        sq1df = pd.read_csv(sq1_data, delim_whitespace=True,
+                    error_bad_lines=False, index_col=False)
     sq1_file = sq1_tune.replace('.bias', '.run')
     print('Reading: ' + sq1_file)
     sq1_runfile = mce_data.MCERunfile(sq1_file)

@@ -1,8 +1,8 @@
 ####### CUSTUM IGNORES #######
 *.bias 
 *.png 
-
-
+input_data/*
+code/Lx_tilemapping/*
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

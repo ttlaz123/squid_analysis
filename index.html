@@ -84,11 +84,19 @@
             </script>
 
         </figure>
-        <!-- A
-
+        1684269423 - <br>
+        sq1_servo_bias_ramp = 1, default_row_select is on,<br>
+        sq1_servo_bias_start = 0;<br>
+        sq1_servo_bias_count = 60;<br>
+        sq1_servo_bias_step = 500;<br>
+        1684272647 - <br>
+        Now sq1_servo_bias_ramp = 1, default_row_select is off, <br>
+        sq1_servo_bias_start = 0; <br>
+        sq1_servo_bias_count = 60;<br>
+        sq1_servo_bias_step = 500;<br>
 
         <figure>
-            <img alt="All Curves In Channel, Uncalibrated Data" id="channel" src="#" />
+            <img alt="RS Servo Column" id="rs" src="#" onerror="javascript:this.src='dne.png'" />
             <figcaption>
 
             </figcaption>
@@ -98,47 +106,47 @@
                     while (num.length < size) num = "0" + num;
                     return num;
                 }
-                colss = [];
-                startcols = 16
-                numcols = 32;
+                cols1 = [];
+                startcols = 0
+                numrows = 41
+                numcols = 32
+                for (let i = 0; i < numrows; i++) {
+                    s = pad(i, 1);
 
-                for (let i = startcols; i < numcols; i++) {
-                    s = pad(i, 2);
-
-                    colss[i - startcols] = s.concat('|', s);
+                    rows[i] = s.concat('|', s);
 
                 }
-                pager.link("#channel",
+
+                for (let i = startcols; i < numcols; i++) {
+                    s = pad(i, 1);
+
+                    cols1[i - startcols] = s.concat('|', s);
+
+                }
+                pager.link("#rs",
                     {
-                        'Y Limit|ylim': [
-                            'Yes|[-15000.0, 15000.0]',
-                            'None|None'
-                        ],
-                        'Filter|filter': [
-                            'None|0',
-                            'No Flats|1',
-                            'Flats only|2',
-                        ],
-                        'Col|col': colss,
-                        'Run Name|run': [
-                            'LC_dark_FPU_250mK_datamode1_run1|LC_dark_FPU_250mK_datamode1_run1',
-                            'LC_dark_FPU_250mK_datamode1_run2|LC_dark_FPU_250mK_datamode1_run2',
+
+                        'Col|col': cols1,
+
+                        'Run|run': [
+                            '1684269423|1684269423',
+                            '1684272647|1684272647',
                         ]
+
                     },
                     function (params) {
-                        name = "code/output_data/" + params.run + '_filter' + params.filter +
-                            '_channels' + params.col + '_ylim' + params.ylim + '.png';
-                        console.log(name)
+                        ctime = params.run
+                        name = "./output_data/" + ctime + '_rsservo_rs_summary_col' +
+                            params.col + '.png';
+                        console.log(name);
                         return name;
 
 
                     });
                 pager.setparams(
                     {
-                        'ylim': 'None',
-                        'filter': '0',
-                        'col': '16',
-                        'run': 'LC_dark_FPU_250mK_datamode1_run1'
+                        'col': '0',
+                        'run': '1684269423',
 
                     }
                 );
@@ -146,7 +154,6 @@
             </script>
 
         </figure>
-     -->
     </section>
 
 
