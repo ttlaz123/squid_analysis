@@ -134,7 +134,7 @@
 
                         'Col|col': cols1,
 
-                        'Run|run': [
+                        'Run|run1': [
                         'Before Warmup, Row Select On|1683651057',
                             'Before Warmup, Row Select Off|1683653428',
                             'After Warmup, Row Select On|1684269423',
@@ -144,7 +144,7 @@
 
                     },
                     function (params) {
-                        ctime = params.run
+                        ctime = params.run1
                         name = "./output_data/" + ctime + '_rsservo_rs_summary_col' +
                             params.col + '.png';
                         console.log(name);
@@ -155,7 +155,7 @@
                 pager.setparams(
                     {
                         'col': '0',
-                        'run': '1684269423',
+                        'run1': '1684269423',
 
                     }
                 );
