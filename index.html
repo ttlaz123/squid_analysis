@@ -57,6 +57,11 @@
                     {
 
                         'Col|col': cols,
+                        'Run|run':[
+                        'Before Warmup|1683651057',
+                            'After Warmup|1684269423',
+                            
+                        ]
                         /*
                         'Run Name|run': [
                             'LC_dark_FPU_250mK_datamode1_run1|LC_dark_FPU_250mK_datamode1_run1',
@@ -66,7 +71,7 @@
                         */
                     },
                     function (params) {
-                        ctime = "1684269423"
+                        ctime = params.run
                         name = "./output_data/" + ctime + '_icminmax_summary_col' +
                             params.col + '.png';
                         console.log(name);
@@ -77,7 +82,7 @@
                 pager.setparams(
                     {
                         'col': '0',
-
+                        'run': '1683651057'
                     }
                 );
 
@@ -94,7 +99,8 @@
         sq1_servo_bias_start = 0; <br>
         sq1_servo_bias_count = 60;<br>
         sq1_servo_bias_step = 500;<br>
-
+        1683651057 - sq1 bias ramp (row selects on)<br>
+        1683653428 - sq1 bias ramp (row select off)<br>
         <figure>
             <img alt="RS Servo Column" id="rs" src="#" onerror="javascript:this.src='dne.png'" />
             <figcaption>
@@ -129,8 +135,11 @@
                         'Col|col': cols1,
 
                         'Run|run': [
-                            '1684269423|1684269423',
-                            '1684272647|1684272647',
+                        'Before Warmup, Row Select On|1683651057',
+                            'Before Warmup, Row Select Off|1683653428',
+                            'After Warmup, Row Select On|1684269423',
+                            'After Warmup, Row Select Off|1684272647',
+                            
                         ]
 
                     },
@@ -164,8 +173,10 @@
             <script type="text/javascript">
                 pager.link("#grid",
                     {
-                        'Run|run2': [
-                            '1684265643|1684265643',
+                        'Run|run3': [
+                        'Before Warmup|1683651057',
+                            'After Warmup|1684269423',
+                            
                         ],
                         'Value|val': [
                             'Ic_col|Ic_col',
@@ -177,7 +188,7 @@
 
                     },
                     function (params) {
-                        ctime = params.run2
+                        ctime = params.run3
                         name = "./output_data/" + ctime + '_' +
                             params.val + '.png';
                         console.log(name);
@@ -188,7 +199,7 @@
                 pager.setparams(
                     {
                         'val': 'Ic_col',
-                        'run2': '1684265643',
+                        'run3': '1684269423',
 
                     }
                 );

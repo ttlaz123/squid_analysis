@@ -357,14 +357,17 @@ def calculate_sq1_parameters(sq1df, sq1_runfile, cfg, col, row, ssa_params,
 
 
 def calculate_icminmax(cfg, filter_sq1, row, col,  sq1_params, ssa_params,
-                       sq1_sgfilter_window_length, sq1_sgfilter_poly_deg, mod_thresh=0.1):
+                       sq1_sgfilter_window_length, sq1_sgfilter_poly_deg, mod_thresh=0.02):
     '''
     Caluculates the ic min and ic max of each row
     '''
+    
     (sq1_safb_servo_curves_dac, sq1_safb_servo_biases_dac,
      max_sq1_safb_servo_span_bias, max_sq1_safb_servo_span, sq1_safb_servo
      ) = sq1_params
     sa_fb_dac_to_uA, M_ssa_fb_pH, sa_ax = ssa_params
+    assert len(sq1_safb_servo_biases_dac
+               )>1, "Must have more than 1 bias point: bias is currently" + str(sq1_safb_servo_biases_dac)
     # np.max/np.min reversed because of SQUID coil polarity; must flip to get physical current
     sq1_safb_servo_mins_dac = np.array([np.max(sq1_safb_servo_curve_dac)
                                         for sq1_safb_servo_curve_dac in sq1_safb_servo_curves_dac])
@@ -415,7 +418,7 @@ def calculate_icminmax(cfg, filter_sq1, row, col,  sq1_params, ssa_params,
     max_sq1imod_idx = np.argmax(sq1_safb_servo_span_sa_in_uA)
     max_sq1imod_uA = (sq1_safb_servo_span_sa_in_uA)[max_sq1imod_idx]
 
-    current_threshold = mod_thresh*max_sq1imod_uA
+    current_threshold = mod_thresh*sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx]
     # print(sq1_safb_servo_span_sa_in_uA)
     # print(current_threshold)
     start_sq1imod_idx = np.argmax(
@@ -625,10 +628,9 @@ def main():
                         help='whether to perform rsservo analysis')
     args = parser.parse_args()
 
-    numrows = 41
     numcols = 32
     cols = range(0, numcols)
-    rows = range(0, numrows)
+    
 
     print('Reading in files:' + str(args.ctime))
     ctime = os.path.basename(os.path.dirname(args.ctime))
@@ -638,8 +640,9 @@ def main():
     if(args.dev_cur):
         time0 = time.time()
         sa_data, sa_runfile = rd.get_ssa_tune_data(args.ctime)
-        sq1df, sq1_runfile = rd.get_rsservo_data(
-            args.ctime)  # rd.get_sq1_tune_data(args.ctime)
+        sq1df, sq1_runfile =  rd.get_sq1_tune_data(args.ctime)
+        numrows = max(sq1df['<row>'].astype(int))+1
+        rows = range(0, numrows)
         sq1df_off = None
         sq1_runfile_off = None
         if(args.ctime_off is not None):
@@ -656,6 +659,8 @@ def main():
         time0 = time.time()
         sa_data, sa_runfile = rd.get_ssa_tune_data(args.ctime)
         rsservo_df, rsservo_runfile = rd.get_rsservo_data(args.ctime)
+        numrows = max(rsservo_df['<row>'].astype(int))+1
+        rows = range(0, numrows)
         rsservo_df_off = None
         rsservo_runfile_off = None
         if(args.ctime_off is not None):

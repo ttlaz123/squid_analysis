@@ -279,9 +279,9 @@ def plot_icminmax_col(last_fig, col, ic_params, ic_params2=None, ctime=None,
 
             bias_limit = sq1_safb_servo_biases_uA[start_sq1imod_idx]
             s1b_minmax_ax.plot([bias_limit, bias_limit],
-                               [0, sq1_safb_servo_biases_uA[-1]], label='Bias Limit', color='deeppink', lw=3)
+                               [0, sq1_safb_servo_biases_uA[-1]], label='Bias Limit', color='deeppink', lw=3, linestyle="dotted")
             s1b_minmax_ax.plot([0, sq1_safb_servo_biases_uA[-1]],
-                               [start_sq1imod_uA, start_sq1imod_uA],  color='deeppink', lw=3)
+                               [start_sq1imod_uA, start_sq1imod_uA],  color='deeppink', lw=3, linestyle="dotted")
 
         s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_biases_uA,
                            label='Slope=1', color='green')
@@ -410,10 +410,22 @@ def tile_plot(num_rows, num_columns, data, label, title,
     '''
     Assumes data to be plotted is accessed by data[row][col]
     '''
-
+    vmin = 0
+    vmax = 20
+    if("Ic_max" in title):
+        vmax = 15
+        vmin = 5
+    if("Ic_col" in title):
+        vmax = 15
+        vmin = 5
+    if("mod" in title):
+        vmax = 5
+    if("bias" in title or "crosstalk" in title ):
+        vmax = 300
     fig, ax = plt.subplots()
     im = plt.imshow(data,
-                    interpolation='none', aspect='equal')
+                    interpolation='none', aspect='equal',
+                    vmin = vmin, vmax=vmax, cmap = 'plasma')
 
     ax = plt.gca()
 
