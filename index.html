@@ -154,6 +154,48 @@
             </script>
 
         </figure>
+
+        <figure>
+            <img alt="Grid" id="grid" src="#" onerror="javascript:this.src='dne.png'" />
+            <figcaption>
+                1684265643 - rowsel_servo_bias_ramp = 1
+
+            </figcaption>
+            <script type="text/javascript">
+                pager.link("#grid",
+                    {
+                        'Run|run2': [
+                            '1684265643|1684265643',
+                        ],
+                        'Value|val': [
+                            'Ic_col|Ic_col',
+                            'Ic_max|Ic_max',
+                            'Modulation|mod',
+                            'Optimal Bias|optbias',
+                            'Crosstalk Bias|crosstalk',
+                        ]
+
+                    },
+                    function (params) {
+                        ctime = params.run2
+                        name = "./output_data/" + ctime + '_' +
+                            params.val + '.png';
+                        console.log(name);
+                        return name;
+
+
+                    });
+                pager.setparams(
+                    {
+                        'val': 'Ic_col',
+                        'run2': '1684265643',
+
+                    }
+                );
+
+            </script>
+
+        </figure>
     </section>
 
 

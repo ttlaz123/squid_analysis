@@ -405,7 +405,8 @@ def plot_rsservo_col(last_fig, col, chip_num, sq1_params, sq1_params2=None, ctim
     return s1b_minmax_fig, s1b_minmax_ax
 
 
-def tile_plot(num_rows, num_columns, data, label, title, savedir='../output_data'):
+def tile_plot(num_rows, num_columns, data, label, title,
+              savedir='../output_data', show_plot=False):
     '''
     Assumes data to be plotted is accessed by data[row][col]
     '''
@@ -441,4 +442,6 @@ def tile_plot(num_rows, num_columns, data, label, title, savedir='../output_data
     cbar.set_label(label)
     savename = os.path.join(savedir, title + '.png')
     plt.savefig(savename)
-    plt.show()
+    if(show_plot):
+        plt.show()
+    plt.close()
