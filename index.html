@@ -58,61 +58,71 @@
     </section>
     <section>
         <h2>
-            New method of choosing bias points
+            Device Current vs Bias Current Analysis
         </h2>
         <p>
-        <p>As explained in the <a href="../../20230524_Squid_tuning_procedure">Squid Tuning Procedure (TR,SF,BAS)</a>
-            posting, using
-            SQ1 bias to determine the rowselect crosstalk is "biased". Device current, or SA FB, would provide
-            better judgement.
-            In the previous posting, (TR,SF,BAS) discuss converting SA FB into physical units for this purpose, and
-            these physical units would be
-            beneficial when comparing between different testing setups. Practically, we don't need the physical units
-            for choosing
-            SQ1 bias in SQ tuning. A benefit of using DAC unit for the new procedure is in its connection with the
-            old tuning plots.
+            To better understand the difference between using device current and bias current for determining cross
+            talk,
+            we futher explore the mathematical analysis.
+            The current flowing through the squid chips depends on whether any row select switch is turned on.
+            For a fixed bias current, the device current is higher when all the row selects are turned off, in
+            comparison
+            to when any row select is turned on. This can be seen in Figure 2.2, where the green/light blue line (row
+            select
+            off)
+            is consistently higher than the red/blue lines (row selects on).
         </p>
-        <p>Figure 2.1 is an example of the conventional SQ1 servo plot with RS on. The y axis is SA FB which is
-            proportional to the Idevice.
-            The device current is modulated with SQ1 FB flux which is the x axis of the plots. SQ1 bias is shown at the
-            lower left
-            corner of each panel in DAC unit. SQ1 servo is taken at different sq1 biases (sq1_servo_bias_ramp) for
-            selecting the optimized SQ1 biases
-            which maximize the peak-to-peak amplitude in the SQ1 servo plots. Similar data is usually taken with RS off
-            to check for potential crosstalk.
-            The new procedure will require the same sets of data, but instead of comparing the acceptible SQ1 bias in
-            both cases, we now look at the
-            device current/SA FB.
+        <p>
+            To understand this behavior, we consider the squid circuit in Figure 3.1. Bias current flows in
+            and out the points marked by SQ1BIAS. The entire circuit can be treated as a parallel circuit
+            with three components, \(R_{shunt}\), \(R_{para}\), and \(R_{squid}\), where \(R_{squid}\) is the effective
+            resistance of
+            the squid chip itself. For the sake of simplicity,
+            we assume that \(R_{para}\) is negligible. The device current \(I_{dev}\) is given by
+            $$I_{dev} + I_{shunt}= I_{bias}$$
+
+            $$I_{shunt}R_{shunt} = I_{dev} R_{squid}$$
+
+            $$I_{dev} = \frac{I_{bias}}{1+R_{squid}/R_{shunt}}$$
+
         </p>
 
         <figure>
-            <img src="1684269457_RCs_sq1servo_sa_b30_00_0.png">
-            <figcaption></figcaption>
+            <img alt="Squid Circuit Schematic" id="circuit" src="circuit.jpg" />
+            <figcaption>
+                Figure from <a href="https://ieeexplore.ieee.org/document/8665919">
+                    NIST</a>
+            </figcaption>
         </figure>
-        <p>The new plots for picking SQ1 bias are in Figure 3.2. The y axis is the SA FB with DC offset corrected [SA_FB
-            - SA_FB(SQ1 bias = 0)].
-            SQ1 min/max are the min and max SA FB in the SQ1 servo plots. The big red dashed cross marks the point where
-            the peak-to-peak of the RS off SQ1 servo
-            curve is a few times larger than the white noise level (RMS at zero bias). Here,
-            we take the horizontal dashed lined as the crosstalk criteria. We need to select SQ1 bias for
-            each column. The desired bias should optimize the SQ1 servo modulation, while keep the maximum device
-            current lower than the crosstalk point
-            for all rows.
+        <p>
+            When all the row select switches are turned off, the squid chip is nominally superconducting, so the
+            effective resistance \(R_{squid}\) is close to zero. In this case, the majority of the bias current
+            flows through the chip, so \(I_{dev} = I_{bias}\). In reality, \(R_{para}\) is approximately a fifth
+            of \(R_{shunt}\), so the actual relation is roughly \(I_{dev} \approx 0.85 I_{bias}\)
+        </p>
+        <p>
+            However, when a row select is on, at least one of the switches is no longer superconducting, which
+            increases the resistance of the squid chip to at least \(R_{series}\) (this value is approximately
+            equal to \(R_{shunt}\) according to <a href="https://ieeexplore.ieee.org/document/8665919">
+                NIST</a>). This brings the value of the device current to approximately
+            \(I_{dev} \approx 0.5 I_{bias}\). This can be seen in Figure 2.2, where the
+            slope of the green line is roughly two times the slope of the red/blue line.
+        </p>
+        <p>
+            This implies that when using the bias current as a marker of cross-talk, much more
+            current flows through the squid chip than is assumed, sometimes as high as a factor of 2.
+            While this strict requirement
+            would essentially eliminate the possibility for cross talk, it potentially causes
+            certain columns to be biased at a lower current than necessary. For chips that
+            do not modulate at all regardless of the bias current, this is not an issue. However,
+            a significant fraction of squid chips shipped by NIST has some cross talk at high
+            biases, and these chips can still be used as long as their cross talk limit is
+            higher than the optimal bias points.
         </p>
 
-        <p> The old vs new picked biases for L9 and L1 are listed below.
-        <pre>
-                old bias L9 00-07: 4500, 4500, 4500, 5000, 3000, 6500, 7500, 4000, 
-                         L9 08-15: 7500,    0, 8000,    0, 7000,    0, 8000, 7000, 
-                         L1 16-23: 5000, 8500, 8500, 5500, 8500, 9000, 8500, 8500, 
-                         L1 24-31: 8500, 8500, 8000, 8500, 8500, 9000, 8500, 8500
-                         
-                new bias L9 00-07: 6000, 7500, 6000, 8000, 5000, 7000, 7500, 6500, 
-                         L9 08-15: 9000,    0, 8000,    0, 8000,    0, 8000, 8000, 
-                         L1 16-23: 9000, 9000, 9000, 9000, 9000, 9000, 9000, 9000,
-                         L1 24-31: 9000, 9000, 9000, 9000, 9000, 9000, 9000, 9000
-            </pre>
-        </p>
+    </section>
+
+    <section>
         <h2>Squid Parameter Plots</h2>
         <p>
             We see from the plot below that some of the columns have multiple different
@@ -130,7 +140,7 @@
             inaccurate. They are shown to demonstrate that the calibration to physical units
             does not change the plots beyond a simple scaling.
         </p>
-        <p>We thank David Goldfinger, who provided the base scripts from which
+        <p>We thank David Goldfinger and Shawn Henderson, who provided the base scripts from which
             the code was adapted.
         </p>
         <figure>
@@ -146,7 +156,7 @@
                     a column turns on even when all the row selects are off. This is a signature of
                     potential crosstalk. The small pink line represents the manually chosen bias
                     current to maximize the modulation while keeping the SQ1 Max below the
-                    crosstalk threshold.
+                    crosstalk threshold (small pink line only exists on summary plots).
                 </p>
 
             </figcaption>
@@ -186,7 +196,7 @@
 
                         ],
                         'Units|units': [
-                            'Microamps (warning, calibration may not be correct)|uA',
+                            'Microamps (warning, calibration very likely incorrect)|uA',
                             'DAC|dac'
                         ]
                         /*
@@ -340,68 +350,61 @@
     </section>
     <section>
         <h2>
-            Device Current vs Bias Current Analysis
+            New method of choosing bias points
         </h2>
         <p>
-            To better understand the difference between using device current and bias current for determining cross
-            talk,
-            we further explore the math.
-            The current flowing through the squid chips depends on whether any row select switch is turned on.
-            For a fixed bias current, the device current is higher when all the row selects are turned off, in
-            comparison
-            to when any row select is turned on. This can be seen in Figure 2.2, where the green/light blue line (row
-            select
-            off)
-            is consistently higher than the red/blue lines (row selects on).
+        <p>As explained in the <a href="../../20230524_Squid_tuning_procedure">Squid Tuning Procedure (TR,SF,BAS)</a>
+            posting, using
+            SQ1 bias to determine the rowselect crosstalk is "biased". Device current, or SA FB, would provide
+            better judgement.
+            In the previous posting, (TR,SF,BAS) discuss converting SA FB into physical units for this purpose, and
+            these physical units would be
+            beneficial when comparing between different testing setups. Practically, we don't need the physical units
+            for choosing
+            SQ1 bias in SQ tuning. A benefit of using DAC unit for the new procedure is in its connection with the
+            old tuning plots.
         </p>
-        <p>
-            To understand this behavior, we consider the squid circuit in Figure 3.1. Bias current flows in
-            and out the points marked by SQ1BIAS. The entire circuit can be treated as a parallel circuit
-            with three components, \(R_{shunt}\), \(R_{para}\), and \(R_{squid}\), where \(R_{squid}\) is the effective
-            resistance of
-            the squid chip itself. For the sake of simplicity,
-            we assume that \(R_{para}\) is negligible. The device current \(I_{dev}\) is given by
-            $$I_{dev} + I_{shunt}= I_{bias}$$
-
-            $$I_{shunt}R_{shunt} = I_{dev} R_{squid}$$
-
-            $$I_{dev} = \frac{I_{bias}}{1+R_{squid}/R_{shunt}}$$
-
+        <p>Figure 2.1 is an example of the conventional SQ1 servo plot with RS on. The y axis is SA FB which is
+            proportional to the Idevice.
+            The device current is modulated with SQ1 FB flux which is the x axis of the plots. SQ1 bias is shown at the
+            lower left
+            corner of each panel in DAC unit. SQ1 servo is taken at different sq1 biases (sq1_servo_bias_ramp) for
+            selecting the optimized SQ1 biases
+            which maximize the peak-to-peak amplitude in the SQ1 servo plots. Similar data is usually taken with RS off
+            to check for potential crosstalk.
+            The new procedure will require the same sets of data, but instead of comparing the acceptible SQ1 bias in
+            both cases, we now look at the
+            device current/SA FB.
         </p>
 
         <figure>
-            <img alt="Squid Circuit Schematic" id="circuit" src="circuit.jpg" />
-            <figcaption>
-                Figure from <a href="https://ieeexplore.ieee.org/document/8665919">
-                    NIST</a>
-            </figcaption>
+            <img src="1684269457_RCs_sq1servo_sa_b30_00_0.png">
+            <figcaption></figcaption>
         </figure>
-        <p>
-            When all the row select switches are turned off, the squid chip is nominally superconducting, so the
-            effective resistance \(R_{squid}\) is close to zero. In this case, the majority of the bias current
-            flows through the chip, so \(I_{dev} = I_{bias}\). In reality, \(R_{para}\) is approximately a fifth
-            of \(R_{shunt}\), so the actual relation is roughly \(I_{dev} \approx 0.85 I_{bias}\)
-        </p>
-        <p>
-            However, when a row select is on, at least one of the switches is no longer superconducting, which
-            increases the resistance of the squid chip to at least \(R_{series}\) (this value is approximately
-            equal to \(R_{shunt}\) according to <a href="https://ieeexplore.ieee.org/document/8665919">
-                NIST</a>). This brings the value of the device current to approximately
-            \(I_{dev} \approx 0.5 I_{bias}\). This can be seen in Figure 2.2, where the
-            slope of the green line is roughly two times the slope of the red/blue line.
-        </p>
-        <p>
-            This implies that when using the bias current as a marker of cross-talk, much more
-            current flows through the squid chip than is assumed, sometimes as high as a factor of 2.
-            While this strict requirement
-            would essentially eliminate the possibility for cross talk, it potentially causes
-            certain columns to be biased at a lower current than necessary. For chips that
-            do not modulate at all regardless of the bias current, this is not an issue. However,
-            a significant fraction of squid chips shipped by NIST has some cross talk at high
-            biases, and these chips can still be used as long as their cross talk limit is
-            higher than the optimal bias points.
+        <p>The new plots for picking SQ1 bias are in Figure 3.2. The y axis is the SA FB with DC offset corrected [SA_FB
+            - SA_FB(SQ1 bias = 0)].
+            SQ1 min/max are the min and max SA FB in the SQ1 servo plots. The big red dashed cross marks the point where
+            the peak-to-peak of the RS off SQ1 servo
+            curve is a few times larger than the white noise level (RMS at zero bias). Here,
+            we take the horizontal dashed lined as the crosstalk criteria. We need to select SQ1 bias for
+            each column. The desired bias should optimize the SQ1 servo modulation, while keep the maximum device
+            current lower than the crosstalk point
+            for all rows.
         </p>
 
+        <p> The old vs new picked biases for L9 and L1 are listed below.
+        <pre>
+                old bias L9 00-07: 4500, 4500, 4500, 5000, 3000, 6500, 7500, 4000, 
+                         L9 08-15: 7500,    0, 8000,    0, 7000,    0, 8000, 7000, 
+                         L1 16-23: 5000, 8500, 8500, 5500, 8500, 9000, 8500, 8500, 
+                         L1 24-31: 8500, 8500, 8000, 8500, 8500, 9000, 8500, 8500
+                         
+                new bias L9 00-07: 6000, 7500, 6000, 8000, 5000, 7000, 7500, 6500, 
+                         L9 08-15: 9000,    0, 8000,    0, 8000,    0, 8000, 8000, 
+                         L1 16-23: 9000, 9000, 9000, 9000, 9000, 9000, 9000, 9000,
+                         L1 24-31: 9000, 9000, 9000, 9000, 9000, 9000, 9000, 9000
+            </pre>
+        </p>
     </section>
     <section>
         <h2>Conclusion</h2>
@@ -418,7 +421,8 @@
     <section>
         <h2>
             Appendix</h2>
-        The code used to generate these plots were adapted from a script written by David Goldfinger.
+        The code used to generate these plots were adapted from a script written by David Goldfinger and Shawn
+        Henderson.
         The files live in
         <pre>/n/holylfs04/LABS/kovac_lab/www/bicep_array/analysis_logbook/20230525_squid_tuning_devcur_analysis/squid_analysis/code</pre>
 
