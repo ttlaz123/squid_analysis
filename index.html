@@ -7,6 +7,13 @@
 </head>
 
 <body>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            TeX: { equationNumbers: { autoNumber: "AMS" } }
+        });
+    </script>
+    <script type="text/javascript" src="./mathjax/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
     <!-- Add my custom pa>er script -->
     <script type="text/javascript" src="scripts/pager.js"></script>
     <link rel="stylesheet" type="text/css" href="scripts/pager.css">
@@ -21,9 +28,76 @@
     </header>
 
     <hr>
-
-
+    <div class="header">
+        <div class="header-right">
+            <a class="active" href="index.html">Home</a>
+            <a href="http://bicep.rc.fas.harvard.edu/bicep_array/analysis_logbook/">Back To BA Analysis Logbook</a>
+        </div>
+    </div>
     <section>
+        <h2>Introduction</h2>
+        While performing comparisons of
+        <a href="http://bicep.rc.fas.harvard.edu/bicep_array/analysis_logbook/20230301_squid_screening/"> squid
+            screening data </a>
+        with the recent squid tuning data from
+        <a href="http://bicep.rc.fas.harvard.edu/bicep_array/analysis_logbook/20230412_L9_squid_tunning/"> L9</a> and
+        <a href="http://bicep.rc.fas.harvard.edu/bicep_array/analysis_logbook/20230413_L11_squid_tuning/"> L11</a>,
+        it has come to our attention that relying solely on bias current may lead to mistakenly discarding functional
+        SQUID chips. To address this concern, we explore the alternative of measuring device current. By
+        assessing the current directly flowing through the chips rather than the total current passing through
+        the MCEs, we can obtain a better understanding of cross talk in
+        SQUID columns. In this posting, we compare the use of bias current and device current for cross talk analysis.
+
+    </section>
+    <section>
+        <h2>
+            Bias Current vs Device Current
+        </h2>
+        <p>
+            As explained in
+            <a href="http://bicep.rc.fas.harvard.edu/bicep_array/analysis_logbook/20230524_Squid_tuning_procedure/">
+                Thibault's recent posting</a>,
+            the current flowing through the squid chips depends on whether any row select switch is turned on.
+            For a fixed bias current, the device current is higher when all the row selects are turned off, in
+            comparison
+            to when any row select is turned on. This can be seen in Figure 2.2, where the green/light blue line (row
+            select
+            off)
+            is consistently higher than the red/blue lines (row selects on).
+        </p>
+        <p>
+            To understand this behavior, we consider the squid circuit in Figure 2.1. Bias current flows in
+            and out the points marked by SQ1BIAS. The entire circuit can be treated as a parallel circuit
+            with three components, \(R_{shunt}\), \(R_{para}\), and \(R_{squid}\), where \(R_{squid}\) is the effective
+            resistance of
+            the squid chip itself. For the sake of simplicity,
+            we assume that \(R_{para}\) is negligible. The device current \(I_{dev}\) is given by
+            $$I_{dev} + I_{shunt}= I_{bias}$$
+
+            $$I_{shunt}R_{shunt} = I_{dev} R_{squid}$$
+
+            $$I_{dev} = \frac{I_{bias}}{1+R_{squid}/R_{shunt}}$$
+
+        </p>
+        <p>
+            When all the row select switches are turned off, the squid chip is nominally superconducting, so the
+            effective resistance \(R_{squid}\) is close to zero. In this case, the majority of the bias current
+            flows through the chip, so \(I_{dev} = I_{bias}\). In reality, \(R_{para}\) is approximately a fifth
+            of \(R_{shunt}\), so the actual relation is roughly \(I_{dev} \approx 0.85 I_{bias}\)
+        </p>
+        <p>
+            However, when a row select is on, at least one of the switches is no longer superconducting, which
+            increases the resistance of the squid chip to at least \(R_{series}\) (this value is approximately
+            equal to \(R_{shunt}\) according to <a href="https://ieeexplore.ieee.org/document/8665919">
+                NIST</a>).
+        </p>
+        <figure>
+            <img alt="Squid Circuit Schematic" id="circuit" src="circuit.jpg" />
+            <figcaption>
+
+            </figcaption>
+        </figure>
+
         <figure>
             <img alt="Tuning column" id="col" src="#" onerror="javascript:this.src='dne.png'" />
             <figcaption>
@@ -58,13 +132,13 @@
                     {
 
                         'Col|col': cols,
-                        'Row|row':rows,
-                        'Run|run':[
-                        'Before Warmup|1683651057',
+                        'Row|row': rows,
+                        'Run|run': [
+                            'Before Warmup|1683651057',
                             'After Warmup and RF shielding|1684269423',
-                            
+
                         ],
-                        'Units|units':[
+                        'Units|units': [
                             'Microamps (warning, calibration may not be correct)|uA',
                             'DAC|dac'
                         ]
@@ -78,13 +152,13 @@
                     },
                     function (params) {
                         ctime = params.run
-                        if(params.row == 'Summary'){
+                        if (params.row == 'Summary') {
                             row = '_summary'
-                        } else{
+                        } else {
                             row = '_row' + params.row
                         }
                         units = params.units;
-                        if(units == 'uA'){
+                        if (units == 'uA') {
                             units = 'ua';
                         }
                         name = "./output_data/" + ctime + '_icminmax_units' + units + row + '_col' +
@@ -97,7 +171,7 @@
                 pager.setparams(
                     {
                         'col': '0',
-                        'row':'Summary',
+                        'row': 'Summary',
                         'run': '1683651057',
                         'units': 'dac'
                     }
@@ -106,7 +180,7 @@
             </script>
 
         </figure>
-        
+
 
         <figure>
             <img alt="Grid" id="grid" src="#" onerror="javascript:this.src='dne.png'" />
@@ -118,9 +192,9 @@
                 pager.link("#grid",
                     {
                         'Run|run': [
-                        'Before Warmup|1683651057',
+                            'Before Warmup|1683651057',
                             'After Warmup and RF shielding|1684269423',
-                            
+
                         ],
                         'Value|val': [
                             '~~~~~~~~~~~~~~~~~~~~~~~~~~|',
@@ -134,7 +208,7 @@
                             'Optimal Bias - Crosstalk Bias|optbias_crosstalk_diff',
                             '~~~~~~~~~~~~~~~~~~~~~~~~~~|',
                         ],
-                        'Units|units':[
+                        'Units|units': [
                             'Microamps (warning, calibration may not be correct)|uA',
                             'DAC|dac'
                         ]
@@ -143,10 +217,10 @@
                     function (params) {
                         ctime = params.run
                         units = params.units;
-                        if(units == 'dac'){
+                        if (units == 'dac') {
                             units = 'DAC';
-                        } 
-                        
+                        }
+
                         name = "./output_data/" + ctime + '_' +
                             params.val + '_units' + units + '.png';
                         console.log(name);
@@ -169,7 +243,7 @@
     </section>
     <section>
         <h2>
-        Appendix</h2>
+            Appendix</h2>
         1684269423 - <br>
         sq1_servo_bias_ramp = 1, default_row_select is on,<br>
         sq1_servo_bias_start = 0;<br>
@@ -216,11 +290,11 @@
                         'Col|col': cols1,
 
                         'Run|run1': [
-                        'Before Warmup, Row Select On|1683651057',
+                            'Before Warmup, Row Select On|1683651057',
                             'Before Warmup, Row Select Off|1683653428',
                             'After Warmup, Row Select On|1684269423',
                             'After Warmup, Row Select Off|1684272647',
-                            
+
                         ]
 
                     },
