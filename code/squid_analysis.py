@@ -515,8 +515,8 @@ def make_grids(rows, cols, ctime, show_plot, savedir, convert_units,
                    show_plot=show_plot, savedir=savedir, vmin =vmin, vmax=vmax)
     
     if(convert_units):
-        vmin = 100
-        vmax = 300
+        vmin = 1000
+        vmax = 3000
     else:
         vmin = 5000
         vmax = 15000
@@ -528,8 +528,8 @@ def make_grids(rows, cols, ctime, show_plot, savedir, convert_units,
                  show_plot=show_plot, savedir=savedir, vmin =vmin, vmax=vmax)
     
     if(convert_units):
-        vmin = -100
-        vmax = 100
+        vmin = -1000
+        vmax = 1000
     else:
         vmin = -5000
         vmax = 5000
@@ -554,15 +554,15 @@ def ic_driver(cfg, sa_data, sa_runfile, sq1df, sq1_runfile, ctime=None,
               sq1df_off=None,  sq1_runfile_off=None, filter_sq1=True,
               cols=range(0, 16), rows=range(0, 40),convert_units=False, plot_all_rows=False):
     manually_picked_biases = np.array([
-        2000,2000,2500, 2300, 
-        1500,2000, 2100, 2000,
-        2500, 2000, 2000, 2000,
-        2000, 2000, 2000, 2000,
-        2500, 2300, 2300, 2300,
-        2300, 2300, 2300, 2300,
-        2300, 2300, 2300, 2300,
-        2300, 2300, 2300, 2300,
-    ])*3.5
+        6000,7500,6000, 8000, 
+        5000,7000, 7500, 6500,
+        9000, 7500, 8000, 8000,
+        8000, 8000, 8000, 8000,
+        9000, 9000, 9000, 9000,
+        9000, 9000, 9000, 9000,
+        9000, 9000, 9000, 9000,
+        9000, 9000, 9000, 9000,
+    ])
     rms_multiplier = 20
 
     sq1_sgfilter_window_length = 5
@@ -606,9 +606,7 @@ def ic_driver(cfg, sa_data, sa_runfile, sq1df, sq1_runfile, ctime=None,
         sq1_b = sq1_b0 + d_sq1_b*np.arange(n_sq1_b)
         manual_bias = manually_picked_biases[col]
         manual_bias_idx = (manual_bias < sq1_b).argmax()
-        print(manual_bias)
-        print(sq1_b)
-        print(manual_bias_idx)
+        
         sq1df_col = sq1df.filter([bname,fluxname,rowname, colname], axis=1)
         if(sq1df_off is not None):
             sq1df_off_col = sq1df_off.filter([bname,fluxname,rowname, colname], axis=1)
