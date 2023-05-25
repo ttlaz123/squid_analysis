@@ -419,7 +419,13 @@
         us to see at a glance which columns and rows are problematic. Future work
         involves using the RS servo curves to identify specific chips that cause
         cross talk issues, and are currently a work in progress (see appendix).
-
+        <p>
+            Alternative solutions include increasing the shunt resistor in the SSA so that
+            the increase in Squid resistance is negligible. We can also change the
+            requirements for squid screening so that bias current is used instead of
+            device current for determining cross talk, but this may cause a significantly
+            lower squid yield at the screening stage.
+        </p>
     </section>
     <section>
         <h2>
