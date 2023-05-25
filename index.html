@@ -119,10 +119,11 @@
                     {
                         'Run|run': [
                         'Before Warmup|1683651057',
-                            'After Warmup|1684269423',
+                            'After Warmup and RF shielding|1684269423',
                             
                         ],
                         'Value|val': [
+                            '~~~~~~~~~~~~~~~~~~~~~~~~~~|',
                             'Ic_col|Ic_col',
                             'Ic_max|Ic_max',
                             'Best Possible Modulation|optmod',
@@ -130,7 +131,8 @@
                             'Optimal Bias|optbias',
                             'Crosstalk Bias|crosstalk',
                             'Ic_max-Ic_col|Ic_maxcol_diff',
-                            'Optimal Bias - Crosstalk Bias|optbias_crosstalk_diff'
+                            'Optimal Bias - Crosstalk Bias|optbias_crosstalk_diff',
+                            '~~~~~~~~~~~~~~~~~~~~~~~~~~|',
                         ],
                         'Units|units':[
                             'Microamps (warning, calibration may not be correct)|uA',
@@ -154,7 +156,7 @@
                     });
                 pager.setparams(
                     {
-                        'val': 'Ic_col',
+                        'val': 'Ic_maxcol_diff',
                         'run': '1684269423',
                         'units': 'dac'
 

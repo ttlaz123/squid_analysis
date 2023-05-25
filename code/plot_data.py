@@ -272,7 +272,7 @@ def plot_icminmax(col, row, ic_params, ic_params2=None, ctime=None, convert_unit
         s1b_minmax_fig.savefig(os.path.join(savedir, savename))
         if(show_plot):
             s1b_minmax_fig.show()
-        s1b_minmax_fig.cla()
+        s1b_minmax_ax.clear()
         print("Figures open: " + str(plt.get_fignums()))
         return s1b_minmax_fig, s1b_minmax_ax
 

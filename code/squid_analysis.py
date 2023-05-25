@@ -772,11 +772,11 @@ def main():
         time1 = time.time()
 
         print('Done reading files, time elapsed (s):' + str(time1-time0))
-        for convert_units in [True, False]:
+        for convert_units in [False]:#True, False]:
             ic_driver(cfg, sa_data, sa_runfile, sq1df, sq1_runfile,
                     sq1df_off=sq1df_off,  sq1_runfile_off=sq1_runfile_off,
                     filter_sq1=True, ctime=ctime,
-                    cols=cols, rows=rows, convert_units=convert_units, plot_all_rows=False)
+                    cols=cols, rows=rows, convert_units=convert_units, plot_all_rows=True)
             '''
             ic_driver(cfg, sa_data, sa_runfile, sq1df, sq1_runfile,
                     sq1df_off=sq1df_off,  sq1_runfile_off=sq1_runfile_off,
