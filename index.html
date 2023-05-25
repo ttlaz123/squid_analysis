@@ -19,7 +19,7 @@
     <link rel="stylesheet" type="text/css" href="scripts/pager.css">
 
     <header>
-        <h1>>Device Current Squid Tuning Analysis</h1>
+        <h1>Device Current Squid Tuning Analysis</h1>
 
         <time datetime="2023-05-25" class="published updated">
             2023 May 25
@@ -113,7 +113,7 @@
                          L1 24-31: 9000, 9000, 9000, 9000, 9000, 9000, 9000, 9000
             </pre>
         </p>
-        <h2>Squid Paramter Plots</h2>
+        <h2>Squid Parameter Plots</h2>
         <p>
             We see from the plot below that some of the columns have multiple different
             optimal bias points. This is because the chips on those columns were sourced
@@ -129,6 +129,9 @@
             the physical units provided below, especially for the bias current, are likely
             inaccurate. They are shown to demonstrate that the calibration to physical units
             does not change the plots beyond a simple scaling.
+        </p>
+        <p>We thank David Goldfinger, who provided the base scripts from which
+            the code was adapted.
         </p>
         <figure>
             <img alt="Tuning column" id="col" src="#" onerror="javascript:this.src='dne.png'" />
@@ -400,8 +403,28 @@
 
     </section>
     <section>
+        <h2>Conclusion</h2>
+        We propose a new set of criteria for determining cross talk, as well as
+        a new set of plots to be used for determining optimal squid biases. By using
+        device current instead of bias current to determine cross talk thresholds, we
+        are able to bias the squid chips at a higher current, which allows us to
+        increase our overall module yield. These new summary and grid plots also allow
+        us to see at a glance which columns and rows are problematic. Future work
+        involves using the RS servo curves to identify specific chips that cause
+        cross talk issues, and are currently a work in progress (see appendix).
+
+    </section>
+    <section>
         <h2>
             Appendix</h2>
+        The code used to generate these plots were adapted from a script written by David Goldfinger.
+        The files live in
+        <pre>/n/holylfs04/LABS/kovac_lab/www/bicep_array/analysis_logbook/20230525_squid_tuning_devcur_analysis/squid_analysis/code</pre>
+
+        as well as
+        <pre>https://github.com/ttlaz123/squid_analysis</pre>
+        <h4>Ctimes:</h4>
+        <h5>Post warmup</h5>
         1684269423 - <br>
         sq1_servo_bias_ramp = 1, default_row_select is on,<br>
         sq1_servo_bias_start = 0;<br>
@@ -412,15 +435,21 @@
         sq1_servo_bias_start = 0; <br>
         sq1_servo_bias_count = 60;<br>
         sq1_servo_bias_step = 500;<br>
+        <h5>Pre warmup</h5>
         1683651057 - sq1 bias ramp (row selects on)<br>
         1683653428 - sq1 bias ramp (row select off)<br>
 
-        <!--
-        Figure Below still under construction
+
+        <h4>RS servo analysis in progress</h4>
         <figure>
             <img alt="RS Servo Column" id="rs" src="#" onerror="javascript:this.src='dne.png'" />
             <figcaption>
-
+                Figure Below still under construction. Units on x-axis are incorrect, and
+                should state RS Flux instead of SQ1 Total Bias Current. The Y-axis should
+                also state SAFB, not SSA Input Current. Each color corresponds to a particular
+                chip in the column. In column 4, there is a clear outlier
+                that suggests there is a row in chip 0 that may be the cause of the cross talk.
+                The RS servo curves are also much cleaner for columns with less cross talk.
             </figcaption>
             <script type="text/javascript">
                 function pad(num, size) {
@@ -479,7 +508,7 @@
             </script>
 
         </figure>
-        -->
+
     </section>
 
 
