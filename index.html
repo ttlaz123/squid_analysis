@@ -36,81 +36,116 @@
     </div>
     <section>
         <h2>Introduction</h2>
-        While performing comparisons of
-        <a href="http://bicep.rc.fas.harvard.edu/bicep_array/analysis_logbook/20230301_squid_screening/"> squid
-            screening data </a>
-        with the recent squid tuning data from
-        <a href="http://bicep.rc.fas.harvard.edu/bicep_array/analysis_logbook/20230412_L9_squid_tunning/"> L9</a> and
-        <a href="http://bicep.rc.fas.harvard.edu/bicep_array/analysis_logbook/20230413_L11_squid_tuning/"> L11</a>,
-        it has come to our attention that relying solely on bias current may lead to mistakenly discarding functional
-        SQUID chips. To address this concern, we explore the alternative of measuring device current. By
-        assessing the current directly flowing through the chips rather than the total current passing through
-        the MCEs, we can obtain a better understanding of cross talk in
-        SQUID columns. In this posting, we compare the use of bias current and device current for cross talk analysis.
-
+        <p>This posting is mainly about the new set of squid plots to help us decide the best crosstalk-free SQ1 bias
+            values.
+        </p>
+        <p>
+            While performing comparisons of
+            <a href="http://bicep.rc.fas.harvard.edu/bicep_array/analysis_logbook/20230301_squid_screening/"> squid
+                screening data </a>
+            with the recent squid tuning data from
+            <a href="http://bicep.rc.fas.harvard.edu/bicep_array/analysis_logbook/20230412_L9_squid_tunning/"> L9</a>
+            and
+            <a href="http://bicep.rc.fas.harvard.edu/bicep_array/analysis_logbook/20230413_L11_squid_tuning/"> L11</a>,
+            it has come to our attention that relying solely on bias current may lead to mistakenly discarding
+            functional
+            SQUID chips. To address this concern, we explore the alternative of measuring device current. By
+            assessing the current directly flowing through the chips rather than the total current passing through
+            the MCEs, we can obtain a better understanding of cross talk in
+            SQUID columns. In this posting, we compare the use of bias current and device current for cross talk
+            analysis.
+        </p>
     </section>
     <section>
         <h2>
-            Bias Current vs Device Current
+            New method of choosing bias points
         </h2>
         <p>
-            As explained in
-            <a href="http://bicep.rc.fas.harvard.edu/bicep_array/analysis_logbook/20230524_Squid_tuning_procedure/">
-                Thibault's recent posting</a>,
-            the current flowing through the squid chips depends on whether any row select switch is turned on.
-            For a fixed bias current, the device current is higher when all the row selects are turned off, in
-            comparison
-            to when any row select is turned on. This can be seen in Figure 2.2, where the green/light blue line (row
-            select
-            off)
-            is consistently higher than the red/blue lines (row selects on).
+        <p>As explained in the <a href="../20230524_Squid_tuning_procedure">Squid Tuning Procedure (TR,SF,BAS)</a>
+            posting, using
+            SQ1 bias to determine the rowselect crosstalk is "biased". Device current, or SA FB, would provide
+            better judgement.
+            In the previous posting, (TR,SF,BAS) discuss converting SA FB into physical units for this purpose, and
+            these physical units would be
+            beneficial when comparing between different testing setups. Practically, we don't need the physical units
+            for choosing
+            SQ1 bias in SQ tuning. A benefit of using DAC unit for the new procedure is in its connection with the
+            old tuning plots.
         </p>
-        <p>
-            To understand this behavior, we consider the squid circuit in Figure 2.1. Bias current flows in
-            and out the points marked by SQ1BIAS. The entire circuit can be treated as a parallel circuit
-            with three components, \(R_{shunt}\), \(R_{para}\), and \(R_{squid}\), where \(R_{squid}\) is the effective
-            resistance of
-            the squid chip itself. For the sake of simplicity,
-            we assume that \(R_{para}\) is negligible. The device current \(I_{dev}\) is given by
-            $$I_{dev} + I_{shunt}= I_{bias}$$
-
-            $$I_{shunt}R_{shunt} = I_{dev} R_{squid}$$
-
-            $$I_{dev} = \frac{I_{bias}}{1+R_{squid}/R_{shunt}}$$
-
+        <p>Figure 2.1 is an example of the conventional SQ1 servo plot with RS on. The y axis is SA FB which is
+            proportional to the Idevice.
+            The device current is modulated with SQ1 FB flux which is the x axis of the plots. SQ1 bias is shown at the
+            lower left
+            corner of each panel in DAC unit. SQ1 servo is taken at different sq1 biases (sq1_servo_bias_ramp) for
+            selecting the optimized SQ1 biases
+            which maximize the peak-to-peak amplitude in the SQ1 servo plots. Similar data is usually taken with RS off
+            to check for potential crosstalk.
+            The new procedure will require the same sets of data, but instead of comparing the acceptible SQ1 bias in
+            both cases, we now look at the
+            device current/SA FB.
         </p>
 
         <figure>
-            <img alt="Squid Circuit Schematic" id="circuit" src="circuit.jpg" />
-            <figcaption>
-
-            </figcaption>
+            <img src="1684269457_RCs_sq1servo_sa_b30_00_0.png">
+            <figcaption></figcaption>
         </figure>
+        <p>The new plots for picking SQ1 bias are in Figure 3.2. The y axis is the SA FB with DC offset corrected [SA_FB
+            - SA_FB(SQ1 bias = 0)].
+            SQ1 min/max are the min and max SA FB in the SQ1 servo plots. The big red dashed cross marks the point where
+            the peak-to-peak of the RS off SQ1 servo
+            curve is a few times larger than the white noise level (RMS at zero bias). Here,
+            we take the horizontal dashed lined as the crosstalk criteria. We need to select SQ1 bias for
+            each column. The desired bias should optimize the SQ1 servo modulation, while keep the maximum device
+            current lower than the crosstalk point
+            for all rows.
+        </p>
+
+        <p> The old vs new picked biases for L9 and L1 are listed below.
+        <pre>
+                old bias L9 00-07: 4500, 4500, 4500, 5000, 3000, 6500, 7500, 4000, 
+                         L9 08-15: 7500,    0, 8000,    0, 7000,    0, 8000, 7000, 
+                         L1 16-23: 5000, 8500, 8500, 5500, 8500, 9000, 8500, 8500, 
+                         L1 24-31: 8500, 8500, 8000, 8500, 8500, 9000, 8500, 8500
+                         
+                new bias L9 00-07: 6000, 7500, 6000, 8000, 5000, 7000, 7500, 6500, 
+                         L9 08-15: 9000,    0, 8000,    0, 8000,    0, 8000, 8000, 
+                         L1 16-23: 9000, 9000, 9000, 9000, 9000, 9000, 9000, 9000,
+                         L1 24-31: 9000, 9000, 9000, 9000, 9000, 9000, 9000, 9000
+            </pre>
+        </p>
+        <h2>Squid Paramter Plots</h2>
         <p>
-            When all the row select switches are turned off, the squid chip is nominally superconducting, so the
-            effective resistance \(R_{squid}\) is close to zero. In this case, the majority of the bias current
-            flows through the chip, so \(I_{dev} = I_{bias}\). In reality, \(R_{para}\) is approximately a fifth
-            of \(R_{shunt}\), so the actual relation is roughly \(I_{dev} \approx 0.85 I_{bias}\)
+            We see from the plot below that some of the columns have multiple different
+            optimal bias points. This is because the chips on those columns were sourced
+            from different wafers, and thus have different paramters. Notably,
+            Wafer 47 chips have a lower crosstalk limit, but they also have a
+            lower optimal bias point to compensate. Thus, they can be used together
+            on the same column. In the future, care must be taken to ensure
+            that chips with similar paramters are placed in the same column.
         </p>
         <p>
-            However, when a row select is on, at least one of the switches is no longer superconducting, which
-            increases the resistance of the squid chip to at least \(R_{series}\) (this value is approximately
-            equal to \(R_{shunt}\) according to <a href="https://ieeexplore.ieee.org/document/8665919">
-                NIST</a>). This brings the value of the device current to approximately
-            \(I_{dev} \approx 0.5 I_{bias}\). This can be seen in Figure 2.2, where the
-            slope of the green line is roughly two times the slope of the red/blue line.
+            Converting from DAC units to physical units requires a set of
+            relevant calibration parameters. Because we lacked the specific information,
+            the physical units provided below, especially for the bias current, are likely
+            inaccurate. They are shown to demonstrate that the calibration to physical units
+            does not change the plots beyond a simple scaling.
         </p>
         <figure>
             <img alt="Tuning column" id="col" src="#" onerror="javascript:this.src='dne.png'" />
             <figcaption>
-                Green/aqua lines: Row selects off. Red/blue lines: row selects on. Dark purple vertical line
-                represents the amplitude of the maximum modulation when row select is on.
-                The dotted thick pink line is the
-                crosstalk threshold and marks the bias current and device current where
-                a column turns on even when all the row selects are off. This is a signature of
-                potential crosstalk. The small pink line represents the manually chosen bias
-                current to maximize the modulation while keeping the SQ1 Max below the
-                crosstalk threshold. Ideally, the red line is completely below the green line.
+                <p>Green/aqua lines: Row selects off; when the green and aqua lines separate, that
+                    indicates that the columns is turning on even though the switches are off.
+                    Red/blue lines: row selects on. Dark purple vertical line
+                    represents the amplitude of the maximum modulation when row select is on.
+                </p>
+                <p>The dotted thick pink line is the
+                    crosstalk threshold and marks the bias current and device current where
+                    a column turns on even when all the row selects are off. This is a signature of
+                    potential crosstalk. The small pink line represents the manually chosen bias
+                    current to maximize the modulation while keeping the SQ1 Max below the
+                    crosstalk threshold.
+                </p>
+
             </figcaption>
             <script type="text/javascript">
                 function pad(num, size) {
@@ -189,13 +224,63 @@
             </script>
 
         </figure>
+        <p>
+            Below, we sumamrize the measured values in a grid. The most relevant
+            parameters are Ic_max - Ic_col, Optimal Bias - Crosstalk Bias, and Manually Picked Modulation.
+        </p>
+        <p>
+            <b>Ic_max - Ic_col </b>is the new proposed metric for determining crosstalk limits.
+            In the grid, red indicates that the Ic_max is higher than Ic_col, which
+            means cross talk is likely if the column was biased at the optimal bias for the row.
+            Column 4 is especially problematic, as can be seen from the summary Ic Check plots:
+            the green line starts to modulate much earlier than expected. There is structure
+            in the coloring from the other columns; this is because different chips have slightly
+            different optimal bias points, and thus different Ic_maxs.
+        </p>
+        <p>
+            <b>Manually picked modulation </b> reveals the modulation for each row at a bias point
+            that was chosen to minimize cross talk. For column 4, because cross talk was
+            prevalent at a low bias, it was necessary to choose a much lower bias point.
+            However, this lower bias point does not yield significant modulation.
 
-
+            In some columns, like 0, there is visible structure in which chips have
+            higher modulation. This is because of the wafer sourcing discussed earlier.
+        </p>
+        <p>
+            <b>Optimal Bias - Crosstalk Bias</b> is the current method for determining crosstalk columns.
+            This is a much stricter criteria that would lead to discarding over half of the columns.
+            The structure that is appear in these plots is not due to wafer sourcing, but rather
+            because of the unstable noise leading to different bias points marked as
+            the crosstalk limit for the same column.
+        </p>
+        <p>In summary, red is <b>bad</b> for the following values: Ic_max, Optimal Bias, Ic_max-Ic_col,
+            and Optimal Bias - Crosstalk Bias. </p>
+        <p>
+            Red is <b>good</b> for the following values: Ic_col, Best Possible Modulation, Manually Picked Modulation,
+            and Crosstalk Bias
+        </p>
         <figure>
             <img alt="Grid" id="grid" src="#" onerror="javascript:this.src='dne.png'" />
             <figcaption>
-                1684265643 - rowsel_servo_bias_ramp = 1
-
+                <p>An all encompassing view of various relevant parameters in a grid format.</p>
+                <p>Ic_col: The device current at which the column starts to modulate with row selects off.</p>
+                <p>Ic_max: The device current at which the row has maximum modulation with row select on.</p>
+                <p>Best possible Modulation:The maximum possible modulation of the row</p>
+                <p>Manually Picked Modulation: The modulation of the row at the proposed
+                    bias point
+                </p>
+                <p>Optimal Bias: The bias current at which the column starts the modulate with row selects off.</p>
+                <p>Crosstalk Bias: The bias current at which the row has maximum modulation with row select on.</p>
+                <p>Ic_max - Ic_col: The difference between the maximum device current through the squid
+                    at the optimal bias and the device current at which crosstalk begins.</p>
+                <p>Optimal - Crosstalk: The difference between the optimal bias point and the
+                    crosstalk bias point.</p>
+                <p>Before warmup, rows 31-40 were not recorded. After
+                    warmup and applying an RF shield around the cables, a significant
+                    source of noise was removed, decreasing the modulation
+                    when the row select switches were off. After warm up,
+                    Columns 9, 11, and 13 were turned off due to heating issues.
+                </p>
             </figcaption>
             <script type="text/javascript">
                 pager.link("#grid",
@@ -249,6 +334,70 @@
             </script>
 
         </figure>
+    </section>
+    <section>
+        <h2>
+            Device Current vs Bias Current Analysis
+        </h2>
+        <p>
+            To better understand the difference between using device current and bias current for determining cross
+            talk,
+            we further explore the math.
+            The current flowing through the squid chips depends on whether any row select switch is turned on.
+            For a fixed bias current, the device current is higher when all the row selects are turned off, in
+            comparison
+            to when any row select is turned on. This can be seen in Figure 2.2, where the green/light blue line (row
+            select
+            off)
+            is consistently higher than the red/blue lines (row selects on).
+        </p>
+        <p>
+            To understand this behavior, we consider the squid circuit in Figure 3.1. Bias current flows in
+            and out the points marked by SQ1BIAS. The entire circuit can be treated as a parallel circuit
+            with three components, \(R_{shunt}\), \(R_{para}\), and \(R_{squid}\), where \(R_{squid}\) is the effective
+            resistance of
+            the squid chip itself. For the sake of simplicity,
+            we assume that \(R_{para}\) is negligible. The device current \(I_{dev}\) is given by
+            $$I_{dev} + I_{shunt}= I_{bias}$$
+
+            $$I_{shunt}R_{shunt} = I_{dev} R_{squid}$$
+
+            $$I_{dev} = \frac{I_{bias}}{1+R_{squid}/R_{shunt}}$$
+
+        </p>
+
+        <figure>
+            <img alt="Squid Circuit Schematic" id="circuit" src="circuit.jpg" />
+            <figcaption>
+
+            </figcaption>
+        </figure>
+        <p>
+            When all the row select switches are turned off, the squid chip is nominally superconducting, so the
+            effective resistance \(R_{squid}\) is close to zero. In this case, the majority of the bias current
+            flows through the chip, so \(I_{dev} = I_{bias}\). In reality, \(R_{para}\) is approximately a fifth
+            of \(R_{shunt}\), so the actual relation is roughly \(I_{dev} \approx 0.85 I_{bias}\)
+        </p>
+        <p>
+            However, when a row select is on, at least one of the switches is no longer superconducting, which
+            increases the resistance of the squid chip to at least \(R_{series}\) (this value is approximately
+            equal to \(R_{shunt}\) according to <a href="https://ieeexplore.ieee.org/document/8665919">
+                NIST</a>). This brings the value of the device current to approximately
+            \(I_{dev} \approx 0.5 I_{bias}\). This can be seen in Figure 2.2, where the
+            slope of the green line is roughly two times the slope of the red/blue line.
+        </p>
+        <p>
+            This implies that when using the bias current as a marker of cross-talk, much more
+            current flows through the squid chip than is assumed, sometimes as high as a factor of 2.
+            While this strict requirement
+            would essentially eliminate the possibility for cross talk, it potentially causes
+            certain columns to be biased at a lower current than necessary. For chips that
+            do not modulate at all regardless of the bias current, this is not an issue. However,
+            a significant fraction of squid chips shipped by NIST has some cross talk at high
+            biases, and these chips can still be used as long as their cross talk limit is
+            higher than the optimal bias points.
+        </p>
+
     </section>
     <section>
         <h2>
