@@ -83,6 +83,7 @@
                         } else{
                             row = '_row' + params.row
                         }
+                        
                         name = "./output_data/" + ctime + '_icminmax_units' + params.units + row + '_col' +
                             params.col + '.png';
                         console.log(name);
@@ -141,7 +142,7 @@
                             units = 'DAC';
                         }
                         name = "./output_data/" + ctime + '_' +
-                            params.val + '_units' + params.units + '.png';
+                            params.val + '_units' + units + '.png';
                         console.log(name);
                         return name;
 
