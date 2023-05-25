@@ -9,5 +9,7 @@ Includes sample input and output data from L9 (cols 0-15) and L1 (cols 16-31). E
 Typical run involves `python squid_analysis.py -c /path/to/config/file -t /path/to/sq1/bias/file -u /path/to/sq1.bias/file/with/rsoff -i`. Use `python squid_analysis.py -h` to see more options.
 
 Requirements: `Python version > 3.6`, 
+
 Standard packages: `scipy`, `glob`, `pandas`, etc,
+
 Input data: Standard data output from MAS with folder structure of `ctime/ctime_*files*`
