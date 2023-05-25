@@ -79,6 +79,13 @@
             $$I_{dev} = \frac{I_{bias}}{1+R_{squid}/R_{shunt}}$$
 
         </p>
+
+        <figure>
+            <img alt="Squid Circuit Schematic" id="circuit" src="circuit.jpg" />
+            <figcaption>
+
+            </figcaption>
+        </figure>
         <p>
             When all the row select switches are turned off, the squid chip is nominally superconducting, so the
             effective resistance \(R_{squid}\) is close to zero. In this case, the majority of the bias current
@@ -94,16 +101,16 @@
             slope of the green line is roughly two times the slope of the red/blue line.
         </p>
         <figure>
-            <img alt="Squid Circuit Schematic" id="circuit" src="circuit.jpg" />
-            <figcaption>
-
-            </figcaption>
-        </figure>
-
-        <figure>
             <img alt="Tuning column" id="col" src="#" onerror="javascript:this.src='dne.png'" />
             <figcaption>
-
+                Green/aqua lines: Row selects off. Red/blue lines: row selects on. Dark purple vertical line
+                represents the amplitude of the maximum modulation when row select is on.
+                The dotted thick pink line is the
+                crosstalk threshold and marks the bias current and device current where
+                a column turns on even when all the row selects are off. This is a signature of
+                potential crosstalk. The small pink line represents the manually chosen bias
+                current to maximize the modulation while keeping the SQ1 Max below the
+                crosstalk threshold. Ideally, the red line is completely below the green line.
             </figcaption>
             <script type="text/javascript">
                 function pad(num, size) {
@@ -258,6 +265,9 @@
         sq1_servo_bias_step = 500;<br>
         1683651057 - sq1 bias ramp (row selects on)<br>
         1683653428 - sq1 bias ramp (row select off)<br>
+
+        <!--
+        Figure Below still under construction
         <figure>
             <img alt="RS Servo Column" id="rs" src="#" onerror="javascript:this.src='dne.png'" />
             <figcaption>
@@ -320,6 +330,7 @@
             </script>
 
         </figure>
+        -->
     </section>
 
 
