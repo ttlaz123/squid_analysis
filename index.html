@@ -36,7 +36,7 @@
     </div>
     <section>
         <h2>Introduction</h2>
-        <p>This posting is mainly about the new set of squid plots to help us decide the best crosstalk-free SQ1 bias
+        <p>This posting concerns the new set of squid plots to help us decide the best crosstalk-free SQ1 bias
             values.
         </p>
         <p>
@@ -68,13 +68,13 @@
             The current flowing through the squid chips depends on whether any row select switch is turned on.
             For a fixed bias current, the device current is higher when all the row selects are turned off, in
             comparison
-            to when any row select is turned on. This can be seen in Figure 2.2, where the green/light blue line (row
+            to when any row select is turned on. This can be seen in Figure 3.1, where the green/light blue line (row
             select
             off)
             is consistently higher than the red/blue lines (row selects on).
         </p>
         <p>
-            To understand this behavior, we consider the squid circuit in Figure 3.1. Bias current flows in
+            To understand this behavior, we consider the squid circuit in Figure 2.1. Bias current flows in
             and out the points marked by SQ1BIAS. The entire circuit can be treated as a parallel circuit
             with three components, \(R_{shunt}\), \(R_{para}\), and \(R_{squid}\), where \(R_{squid}\) is the effective
             resistance of
@@ -106,8 +106,9 @@
             increases the resistance of the squid chip to at least \(R_{series}\) (this value is approximately
             equal to \(R_{shunt}\) according to <a href="https://ieeexplore.ieee.org/document/8665919">
                 NIST</a>). This brings the value of the device current to approximately
-            \(I_{dev} \approx 0.5 I_{bias}\). This can be seen in Figure 2.2, where the
-            slope of the green line is roughly two times the slope of the red/blue line.
+            \(I_{dev} \approx 0.5 I_{bias}\). This can be seen in Figure 3.1, where the
+            slope of the green line is roughly two times the slope of the red/blue line
+            in the left half of the plot.
         </p>
         <p>
             This implies that when using the bias current as a marker of cross-talk, much more
@@ -365,7 +366,7 @@
             SQ1 bias in SQ tuning. A benefit of using DAC unit for the new procedure is in its connection with the
             old tuning plots.
         </p>
-        <p>Figure 2.1 is an example of the conventional SQ1 servo plot with RS on. The y axis is SA FB which is
+        <p>Figure 4.1 is an example of the conventional SQ1 servo plot with RS on. The y axis is SA FB which is
             proportional to the Idevice.
             The device current is modulated with SQ1 FB flux which is the x axis of the plots. SQ1 bias is shown at the
             lower left
@@ -382,7 +383,7 @@
             <img src="1684269457_RCs_sq1servo_sa_b30_00_0.png">
             <figcaption></figcaption>
         </figure>
-        <p>The new plots for picking SQ1 bias are in Figure 3.2. The y axis is the SA FB with DC offset corrected [SA_FB
+        <p>The new plots for picking SQ1 bias are in Figure 3.1. The y axis is the SA FB with DC offset corrected [SA_FB
             - SA_FB(SQ1 bias = 0)].
             SQ1 min/max are the min and max SA FB in the SQ1 servo plots. The big red dashed cross marks the point where
             the peak-to-peak of the RS off SQ1 servo
