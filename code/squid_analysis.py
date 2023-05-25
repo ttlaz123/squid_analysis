@@ -357,7 +357,7 @@ def calculate_sq1_parameters(sq1df, sq1_runfile, cfg, col, row, ssa_params,
 
 
 def calculate_icminmax(cfg, filter_sq1, row, col,  sq1_params, ssa_params,
-                       sq1_sgfilter_window_length, sq1_sgfilter_poly_deg, mod_thresh=0.02):
+                       sq1_sgfilter_window_length, sq1_sgfilter_poly_deg, mod_thresh=100, convert_units=False):
     '''
     Caluculates the ic min and ic max of each row
     '''
@@ -376,31 +376,24 @@ def calculate_icminmax(cfg, filter_sq1, row, col,  sq1_params, ssa_params,
 
     # To convert to current, need to flip and zero starting value, then
     # scale to SSA in current units
-    sq1_bias_dac_to_uA = 1.e6*(float(cfg['SQ1']['SQ1_BIAS_DAC_MAX_VOLTAGE_VOLTS'])/(  # the 1.e6 converts from A->uA
+    if(convert_units):
+        sq1_bias_dac_to_uA = 1.e6*(float(cfg['SQ1']['SQ1_BIAS_DAC_MAX_VOLTAGE_VOLTS'])/(  # the 1.e6 converts from A->uA
         (np.power(2, int(cfg['SQ1']['SQ1_BIAS_DAC_NBITS'])))*(
             float(cfg['CRYOCABLE']['CRYOCABLE_ROUNDTRIP_RESISTANCE_OHMS']) +
             float(cfg['SQ1']['SQ1_BIAS_BACKPLANE_RESISTANCE_OHMS']) +
             float(cfg['SQ1']['SQ1_BIAS_BC_RESISTANCE_OHM']))))
-
+    else:
+        sq1_bias_dac_to_uA = 1
     sq1_safb_servo_biases_uA = np.array(
-        sq1_safb_servo_biases_dac)*sq1_bias_dac_to_uA
+            sq1_safb_servo_biases_dac)*sq1_bias_dac_to_uA
+    
+  
+    if(convert_units):
+        sa_fb_dac_to_sa_in_uA = (
+            sa_fb_dac_to_uA*M_ssa_fb_pH/float(cfg['SSA']['SSA_M_IN_PICOHENRY']))
+    else:
+        sa_fb_dac_to_sa_in_uA = 1
 
-    # sa_fb_servo_maxs_uA =  sa_fb_dac_to_uA*(
-    #    np.mean(sq1_safb_servo_curves_dac[0])-sq1_safb_servo_maxs_dac) #The max and min curve should be identical where it is superconducting, but the max curve is superconducting longer.
-
-    #min_sc_branch_current_uA = 1
-    #max_sc_branch_current_uA = 5.5
-    # indices_sc = np.where(
-    #    (sq1_safb_servo_biases_uA > min_sc_branch_current_uA) &
-    #    (sq1_safb_servo_biases_uA < max_sc_branch_current_uA))
-    #zsc = np.polyfit(sq1_safb_servo_biases_uA[indices_sc], sa_fb_servo_maxs_uA[indices_sc], 1)
-
-    #M_ssa_in_pH = M_ssa_fb_pH/zsc[0]
-    # print(M_ssa_in_pH)
-    # print(float(cfg['SSA']['SSA_M_IN_PICOHENRY']))
-
-    sa_fb_dac_to_sa_in_uA = (
-        sa_fb_dac_to_uA*M_ssa_fb_pH/float(cfg['SSA']['SSA_M_IN_PICOHENRY']))
     sq1_safb_servo_mins_sa_in_uA = sa_fb_dac_to_sa_in_uA*(
         np.mean(sq1_safb_servo_curves_dac[0])-sq1_safb_servo_mins_dac)
     sq1_safb_servo_maxs_sa_in_uA = sa_fb_dac_to_sa_in_uA*(
@@ -409,7 +402,7 @@ def calculate_icminmax(cfg, filter_sq1, row, col,  sq1_params, ssa_params,
     if filter_sq1:
         sq1_safb_servo_mins_sa_in_uA = savgol_filter(
             sq1_safb_servo_mins_sa_in_uA, sq1_sgfilter_window_length, sq1_sgfilter_poly_deg)
-        sq1_safb_servo_maxs_uA = savgol_filter(
+        sq1_safb_servo_maxs_sa_in_uA = savgol_filter(
             sq1_safb_servo_maxs_sa_in_uA, sq1_sgfilter_window_length, sq1_sgfilter_poly_deg)
 
     # plot max mod
@@ -418,23 +411,14 @@ def calculate_icminmax(cfg, filter_sq1, row, col,  sq1_params, ssa_params,
     max_sq1imod_idx = np.argmax(sq1_safb_servo_span_sa_in_uA)
     max_sq1imod_uA = (sq1_safb_servo_span_sa_in_uA)[max_sq1imod_idx]
 
-    current_threshold = mod_thresh*sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx]
-    # print(sq1_safb_servo_span_sa_in_uA)
-    # print(current_threshold)
+
+    current_threshold = mod_thresh*sa_fb_dac_to_sa_in_uA 
+    
     start_sq1imod_idx = np.argmax(
         sq1_safb_servo_span_sa_in_uA > current_threshold)
     if(start_sq1imod_idx == 0):
         start_sq1imod_idx = -1
-    # print(start_sq1imod_idx)
     start_sq1imod_uA = (sq1_safb_servo_maxs_sa_in_uA)[start_sq1imod_idx]
-
-    # tasf.write(
-    #    f'{col}\t{row}\t{max_sq1_safb_servo_span_bias}\t{sq1_safb_servo_biases_uA[max_sq1imod_idx]: .1f}\t{max_sq1_safb_servo_span}\t{max_sq1imod_uA:.3f}\n')
-
-    # subtract zero offsets
-
-    # Close tune analysis summary file
-    # tasf.close()
 
     ic_params = (sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
                  sq1_safb_servo_maxs_sa_in_uA, max_sq1imod_idx, max_sq1imod_uA,
@@ -452,8 +436,20 @@ def fill_grid_data(value, row, col, grid=None, max_rows=41, max_cols=32):
     grid[row, col] = value
     return grid
 
+def get_rms_noise(sq1df, row, col):
+    '''
+    gets the rms noise at zero bias
+    '''
+    zero_bias = 0
+    sq1df_row = sq1df[(sq1df['<row>'] == row)]
+    sq1df_rowbias =  sq1df_row[sq1df['<bias>']==zero_bias]
+    sq1_safb_servo = sq1df_rowbias[f'<safb{col:02}>'].values
+    sq1df_row = sq1df[(sq1df['<row>'] == row)]
+    sq1_safb_servo_mean = np.mean(sq1_safb_servo)
+    rms = np.sqrt(np.mean(np.square(sq1_safb_servo-sq1_safb_servo_mean)))
+    return rms
 
-def get_icmaxcolmod(ic_params, ic_params2):
+def get_icmaxcolmod(ic_params, ic_params2,manual_bias=None):
     '''
     Gets ic col, ic max, and modulation given the ic_params
     '''
@@ -465,6 +461,10 @@ def get_icmaxcolmod(ic_params, ic_params2):
     ic_max = sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx]
     mod = -(sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx] -
             sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx])
+    manual_mod = None
+    if(manual_bias is not None):
+        manual_mod = -(sq1_safb_servo_mins_sa_in_uA[manual_bias] -
+            sq1_safb_servo_maxs_sa_in_uA[manual_bias])
     optimal_bias = sq1_safb_servo_biases_uA[max_sq1imod_idx]
 
     ic_col = -1
@@ -476,23 +476,120 @@ def get_icmaxcolmod(ic_params, ic_params2):
         ic_col = sq1_safb_servo_maxs_sa_in_uA[start_sq1imod_idx]
         crosstalk_bias = sq1_safb_servo_biases_uA[start_sq1imod_idx]
 
-    return ic_col, ic_min, ic_max, mod, optimal_bias, crosstalk_bias
+    return ic_col, ic_min, ic_max, mod, optimal_bias, crosstalk_bias, manual_mod
 
+
+def make_grids(rows, cols, ctime, show_plot, savedir, convert_units,
+               ic_col_grid, ic_max_grid, mod_grid, optimal_bias_grid, crosstalk_bias_grid,
+               bias_crosstalk_diff_grid, ic_maxcoldiff_grid, manual_mod):
+    if(convert_units):
+        uname = 'uA'
+        vmin = 5
+        vmax = 15
+    else:
+        uname = 'DAC'
+        vmin = 2000
+        vmax = 6000
+
+
+    print('plotting grids...')
+    pd.tile_plot(len(rows), len(cols), ic_col_grid,
+                 'Ic,col ('+uname+')', str(ctime)+'_Ic_col'+'_units'+uname, 
+                 show_plot=show_plot, savedir=savedir, vmin =vmin, vmax=vmax)
+    
+    pd.tile_plot(len(rows), len(cols), ic_max_grid,
+                 'Ic,max ('+uname+')', str(ctime)+'_Ic_max'+'_units'+uname, 
+                 show_plot=show_plot, savedir=savedir, vmin =vmin, vmax=vmax)
+    
+    if(convert_units):
+        vmin = 0
+        vmax = 5
+    else:
+        vmin = 0
+        vmax = 2000
+    pd.tile_plot(len(rows), len(cols), mod_grid,
+                 'Optimal Modulation ('+uname+')', str(ctime)+'_optmod'+'_units'+uname,
+                   show_plot=show_plot, savedir=savedir, vmin =vmin, vmax=vmax)
+    pd.tile_plot(len(rows), len(cols), manual_mod,
+                 'Manullay Picked Modulation ('+uname+')', str(ctime)+'_manualmod'+'_units'+uname,
+                   show_plot=show_plot, savedir=savedir, vmin =vmin, vmax=vmax)
+    
+    if(convert_units):
+        vmin = 100
+        vmax = 300
+    else:
+        vmin = 5000
+        vmax = 15000
+    pd.tile_plot(len(rows), len(cols), optimal_bias_grid,
+                 'Optimal Bias ('+uname+')', str(ctime)+'_optbias'+'_units'+uname, 
+                 show_plot=show_plot, savedir=savedir, vmin =vmin, vmax=vmax)
+    pd.tile_plot(len(rows), len(cols), crosstalk_bias_grid,
+                 'Crosstalk Bias Limit ('+uname+')', str(ctime)+'_crosstalk'+'_units'+uname, 
+                 show_plot=show_plot, savedir=savedir, vmin =vmin, vmax=vmax)
+    
+    if(convert_units):
+        vmin = -100
+        vmax = 100
+    else:
+        vmin = -5000
+        vmax = 5000
+
+    pd.tile_plot(len(rows), len(cols), bias_crosstalk_diff_grid,
+                 'Optimal Bias - Crosstalk Bias Limit ('+uname+')', str(ctime)+'_optbias_crosstalk_diff'+'_units'+uname, 
+                 show_plot=show_plot, savedir=savedir, vmin =vmin, vmax=vmax)
+    
+    if(convert_units):
+        vmin = -5
+        vmax = 5
+    else:
+        vmin = -2000
+        vmax = 2000
+
+    pd.tile_plot(len(rows), len(cols), ic_maxcoldiff_grid,
+                 'Ic,max - Ic,col ('+uname+')', str(ctime)+'_Ic_maxcol_diff'+'_units'+uname, 
+                 show_plot=show_plot, savedir=savedir, vmin =vmin, vmax=vmax)
+    return 
 
 def ic_driver(cfg, sa_data, sa_runfile, sq1df, sq1_runfile, ctime=None,
               sq1df_off=None,  sq1_runfile_off=None, filter_sq1=True,
-              cols=range(0, 16), rows=range(0, 40)):
+              cols=range(0, 16), rows=range(0, 40),convert_units=False, plot_all_rows=False):
+    manually_picked_biases = np.array([
+        2000,2000,2500, 2300, 
+        1500,2000, 2100, 2000,
+        2500, 2000, 2000, 2000,
+        2000, 2000, 2000, 2000,
+        2500, 2300, 2300, 2300,
+        2300, 2300, 2300, 2300,
+        2300, 2300, 2300, 2300,
+        2300, 2300, 2300, 2300,
+    ])*3.5
+    rms_multiplier = 20
+
     sq1_sgfilter_window_length = 5
     sq1_sgfilter_poly_deg = 2
     calc_slopes = False
     show_plot = False
+    
+    bname = '<bias>'
+    fluxname = '<flux>'
+    rowname = '<row>'
+    savedir = '../output_data'
+    
     ic_max_grid = None
     ic_col_grid = None
+    ic_maxcoldiff_grid = None
     mod_grid = None
     optimal_bias_grid = None
     crosstalk_bias_grid = None
+    bias_crosstalk_diff_grid = None
+    manual_mod_grid = None
+    fig = None
+    ax = None
+    s1b_minmax_fig = None
+    s1b_minmax_ax = None
     for col in cols:
-
+        colname = '<safb' + str(str(col).zfill(2)) + '>'
+        
         print("Analyzing Column: " + str(col))
         try:
             ssa_params = calculate_ssa_parameters(
@@ -503,55 +600,83 @@ def ic_driver(cfg, sa_data, sa_runfile, sq1df, sq1_runfile, ctime=None,
         if(ssa_params is None):
             print('Skipping Column: ' + str(col))
             continue
-        s1b_minmax_fig = None
-        s1b_minmax_ax = None
-
+       
+        sq1_b0, d_sq1_b, n_sq1_b = tuple([
+        int(i) for i in sq1_runfile.Item('par_ramp', 'par_step loop1 par1')])
+        sq1_b = sq1_b0 + d_sq1_b*np.arange(n_sq1_b)
+        manual_bias = manually_picked_biases[col]
+        manual_bias_idx = (manual_bias < sq1_b).argmax()
+        print(manual_bias)
+        print(sq1_b)
+        print(manual_bias_idx)
+        sq1df_col = sq1df.filter([bname,fluxname,rowname, colname], axis=1)
+        if(sq1df_off is not None):
+            sq1df_off_col = sq1df_off.filter([bname,fluxname,rowname, colname], axis=1)
+            zerobias_rms = []
         for row in rows:
+            sq1df_row = sq1df_col[sq1df_col[rowname] == row]
+            
+            
             last_fig = (row == rows[-1])
 
-            sq1_params = calculate_sq1_parameters(sq1df, sq1_runfile, cfg, col, row,
+            sq1_params = calculate_sq1_parameters(sq1df_row, sq1_runfile, cfg, col, row,
                                                   ssa_params, filter_sq1=filter_sq1, calc_slopes=calc_slopes,
                                                   sq1_sgfilter_window_length=sq1_sgfilter_window_length,
                                                   sq1_sgfilter_poly_deg=sq1_sgfilter_poly_deg)
 
             ic_params = calculate_icminmax(cfg, filter_sq1, row, col,  sq1_params, ssa_params,
-                                           sq1_sgfilter_window_length, sq1_sgfilter_poly_deg)
+                                           sq1_sgfilter_window_length, sq1_sgfilter_poly_deg, convert_units=convert_units)
             if(sq1df_off is not None):
-                sq1_params2 = calculate_sq1_parameters(sq1df_off, sq1_runfile_off, cfg, col, row,
+                sq1df_off_row = sq1df_off_col[sq1df_off_col[rowname] ==row]
+                rms_noise = get_rms_noise(sq1df_row, row, col)
+                #print("Threshold:" + str(rms_noise*rms_multiplier))
+                zerobias_rms.append(rms_noise)
+                sq1_params2 = calculate_sq1_parameters(sq1df_off_row, sq1_runfile_off, cfg, col, row,
                                                        ssa_params, filter_sq1=filter_sq1)
 
                 ic_params2 = calculate_icminmax(cfg, filter_sq1, row, col,  sq1_params2, ssa_params,
-                                                sq1_sgfilter_window_length, sq1_sgfilter_poly_deg)
+                                                sq1_sgfilter_window_length, sq1_sgfilter_poly_deg, convert_units=convert_units,
+                                                mod_thresh=rms_noise*rms_multiplier)
             else:
                 ic_params2 = None
-            # pd.plot_icminmax(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA, sq1_safb_servo_maxs_sa_in_uA,
-             #     max_sq1imod_idx, max_sq1imod_uA)#, tune_ctime, col, row)
-            s1b_minmax_fig, s1b_minmax_ax = pd.plot_icminmax_col(last_fig, col, ic_params,
+            
+            if(plot_all_rows):
+                fig, ax= pd.plot_icminmax(col, row, ic_params, ic_params2=ic_params2, 
+                             ctime=ctime, convert_units=convert_units, s1b_minmax_ax=ax, 
+                             s1b_minmax_fig=fig,
+                            savedir = savedir, 
+                            show_plot=show_plot)
+            else: 
+                s1b_minmax_fig, s1b_minmax_ax = pd.plot_icminmax_col(last_fig, col, ic_params,
                                                                  ic_params2=ic_params2, ctime=ctime,
                                                                  s1b_minmax_ax=s1b_minmax_ax,
-                                                                 s1b_minmax_fig=s1b_minmax_fig)
+                                                                 s1b_minmax_fig=s1b_minmax_fig, 
+                                                                 convert_units=convert_units,
+                                                                 show_plot=show_plot, savedir=savedir,
+                                                                 manual_bias_idx = manual_bias_idx)
             (ic_col, ic_min, ic_max, mod,
-             optimal_bias, crosstalk_bias) = get_icmaxcolmod(
-                ic_params, ic_params2)
+             optimal_bias, crosstalk_bias, manual_mod) = get_icmaxcolmod(
+                ic_params, ic_params2, manual_bias=manual_bias_idx)
             ic_col_grid = fill_grid_data(ic_col, row, col, grid=ic_col_grid)
             ic_max_grid = fill_grid_data(ic_max, row, col, grid=ic_max_grid)
+            ic_maxcoldiff_grid = fill_grid_data(ic_max-ic_col, row, col, grid=ic_maxcoldiff_grid)
+            
             mod_grid = fill_grid_data(mod, row, col, grid=mod_grid)
             optimal_bias_grid = fill_grid_data(
                 optimal_bias, row, col, grid=optimal_bias_grid)
             crosstalk_bias_grid = fill_grid_data(
                 crosstalk_bias, row, col, grid=crosstalk_bias_grid)
-    print('plotting grids...')
-    pd.tile_plot(len(rows), len(cols), ic_col_grid,
-                 'Ic,col (uA)', str(ctime)+'_Ic_col')
-    pd.tile_plot(len(rows), len(cols), ic_max_grid,
-                 'Ic,max (uA)', str(ctime)+'_Ic_max')
-    pd.tile_plot(len(rows), len(cols), mod_grid,
-                 'Modulation (uA)', str(ctime)+'_mod')
-    pd.tile_plot(len(rows), len(cols), optimal_bias_grid,
-                 'Optimal Bias (uA)', str(ctime)+'_optbias')
-    pd.tile_plot(len(rows), len(cols), crosstalk_bias_grid,
-                 'Crosstalk Bias Limit (uA)', str(ctime)+'_crosstalk')
+            bias_crosstalk_diff_grid = fill_grid_data(
+                optimal_bias-crosstalk_bias, row, col, grid=bias_crosstalk_diff_grid)
 
+            manual_mod_grid = fill_grid_data(
+                manual_mod, row, col, grid=manual_mod_grid)
+            
+
+    make_grids(rows, cols, ctime, show_plot, savedir, convert_units,
+               ic_col_grid, ic_max_grid, mod_grid, optimal_bias_grid, crosstalk_bias_grid,
+               bias_crosstalk_diff_grid, ic_maxcoldiff_grid, manual_mod_grid)
+   
 
 def rs_driver(cfg, sa_data, sa_runfile, rsdf, rs_runfile, ctime=None,
               rsdf_off=None,  rs_runfile_off=None, filter_sq1=True,
@@ -630,7 +755,6 @@ def main():
 
     numcols = 32
     cols = range(0, numcols)
-    
 
     print('Reading in files:' + str(args.ctime))
     ctime = os.path.basename(os.path.dirname(args.ctime))
@@ -650,11 +774,17 @@ def main():
         time1 = time.time()
 
         print('Done reading files, time elapsed (s):' + str(time1-time0))
-
-        ic_driver(cfg, sa_data, sa_runfile, sq1df, sq1_runfile,
-                  sq1df_off=sq1df_off,  sq1_runfile_off=sq1_runfile_off,
-                  filter_sq1=True, ctime=ctime,
-                  cols=cols, rows=rows)
+        for convert_units in [True, False]:
+            ic_driver(cfg, sa_data, sa_runfile, sq1df, sq1_runfile,
+                    sq1df_off=sq1df_off,  sq1_runfile_off=sq1_runfile_off,
+                    filter_sq1=True, ctime=ctime,
+                    cols=cols, rows=rows, convert_units=convert_units, plot_all_rows=False)
+            '''
+            ic_driver(cfg, sa_data, sa_runfile, sq1df, sq1_runfile,
+                    sq1df_off=sq1df_off,  sq1_runfile_off=sq1_runfile_off,
+                    filter_sq1=True, ctime=ctime,
+                    cols=cols, rows=rows, convert_units=convert_units, plot_all_rows=True)
+            '''
     if(args.rsservo):
         time0 = time.time()
         sa_data, sa_runfile = rd.get_ssa_tune_data(args.ctime)

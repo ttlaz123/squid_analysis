@@ -53,14 +53,20 @@
                     cols[i - startcols] = s.concat('|', s);
 
                 }
+                rows[numrows] = 'Summary'
                 pager.link("#col",
                     {
 
                         'Col|col': cols,
+                        'Row|row':rows,
                         'Run|run':[
                         'Before Warmup|1683651057',
-                            'After Warmup|1684269423',
+                            'After Warmup and RF shielding|1684269423',
                             
+                        ],
+                        'Units|units':[
+                            'Microamps (warning, calibration may not be correct)|uA',
+                            'DAC|dac'
                         ]
                         /*
                         'Run Name|run': [
@@ -72,7 +78,12 @@
                     },
                     function (params) {
                         ctime = params.run
-                        name = "./output_data/" + ctime + '_icminmax_summary_col' +
+                        if(params.row == 'Summary'){
+                            row = '_summary'
+                        } else{
+                            row = '_row' + params.row
+                        }
+                        name = "./output_data/" + ctime + '_icminmax_units' + params.units + row + '_col' +
                             params.col + '.png';
                         console.log(name);
                         return name;
@@ -82,13 +93,76 @@
                 pager.setparams(
                     {
                         'col': '0',
-                        'run': '1683651057'
+                        'row':'Summary',
+                        'run': '1683651057',
+                        'units': 'dac'
                     }
                 );
 
             </script>
 
         </figure>
+        
+
+        <figure>
+            <img alt="Grid" id="grid" src="#" onerror="javascript:this.src='dne.png'" />
+            <figcaption>
+                1684265643 - rowsel_servo_bias_ramp = 1
+
+            </figcaption>
+            <script type="text/javascript">
+                pager.link("#grid",
+                    {
+                        'Run|run': [
+                        'Before Warmup|1683651057',
+                            'After Warmup|1684269423',
+                            
+                        ],
+                        'Value|val': [
+                            'Ic_col|Ic_col',
+                            'Ic_max|Ic_max',
+                            'Best Possible Modulation|optmod',
+                            'Manually Picked Modulation|manualmod',
+                            'Optimal Bias|optbias',
+                            'Crosstalk Bias|crosstalk',
+                            'Ic_max-Ic_col|Ic_maxcol_diff',
+                            'Optimal Bias - Crosstalk Bias|optbias_crosstalk_diff'
+                        ],
+                        'Units|units':[
+                            'Microamps (warning, calibration may not be correct)|uA',
+                            'DAC|dac'
+                        ]
+
+                    },
+                    function (params) {
+                        ctime = params.run
+                        units = params.units;
+                        if(units == 'dac'){
+                            units = 'DAC';
+                        }
+                        name = "./output_data/" + ctime + '_' +
+                            params.val + '_units' + params.units + '.png';
+                        console.log(name);
+                        return name;
+
+
+                    });
+                pager.setparams(
+                    {
+                        'val': 'Ic_col',
+                        'run': '1684269423',
+                        'units': 'dac'
+
+                    }
+                );
+
+            </script>
+
+        </figure>
+    </section>
+    <section>
+        <h2>
+        Appendix</h2>
         1684269423 - <br>
         sq1_servo_bias_ramp = 1, default_row_select is on,<br>
         sq1_servo_bias_start = 0;<br>
@@ -156,50 +230,6 @@
                     {
                         'col': '0',
                         'run1': '1684269423',
-
-                    }
-                );
-
-            </script>
-
-        </figure>
-
-        <figure>
-            <img alt="Grid" id="grid" src="#" onerror="javascript:this.src='dne.png'" />
-            <figcaption>
-                1684265643 - rowsel_servo_bias_ramp = 1
-
-            </figcaption>
-            <script type="text/javascript">
-                pager.link("#grid",
-                    {
-                        'Run|run3': [
-                        'Before Warmup|1683651057',
-                            'After Warmup|1684269423',
-                            
-                        ],
-                        'Value|val': [
-                            'Ic_col|Ic_col',
-                            'Ic_max|Ic_max',
-                            'Modulation|mod',
-                            'Optimal Bias|optbias',
-                            'Crosstalk Bias|crosstalk',
-                        ]
-
-                    },
-                    function (params) {
-                        ctime = params.run3
-                        name = "./output_data/" + ctime + '_' +
-                            params.val + '.png';
-                        console.log(name);
-                        return name;
-
-
-                    });
-                pager.setparams(
-                    {
-                        'val': 'Ic_col',
-                        'run3': '1684269423',
 
                     }
                 );
