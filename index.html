@@ -83,8 +83,11 @@
                         } else{
                             row = '_row' + params.row
                         }
-                        
-                        name = "./output_data/" + ctime + '_icminmax_units' + params.units + row + '_col' +
+                        units = params.units;
+                        if(units == 'uA'){
+                            units = 'ua';
+                        }
+                        name = "./output_data/" + ctime + '_icminmax_units' + units + row + '_col' +
                             params.col + '.png';
                         console.log(name);
                         return name;
@@ -140,7 +143,8 @@
                         units = params.units;
                         if(units == 'dac'){
                             units = 'DAC';
-                        }
+                        } 
+                        
                         name = "./output_data/" + ctime + '_' +
                             params.val + '_units' + units + '.png';
                         console.log(name);
