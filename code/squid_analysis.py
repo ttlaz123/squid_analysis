@@ -605,7 +605,7 @@ def ic_driver(cfg, sa_data, sa_runfile, sq1df, sq1_runfile, ctime=None,
         int(i) for i in sq1_runfile.Item('par_ramp', 'par_step loop1 par1')])
         sq1_b = sq1_b0 + d_sq1_b*np.arange(n_sq1_b)
         manual_bias = manually_picked_biases[col]
-        manual_bias_idx = (manual_bias < sq1_b).argmax()
+        manual_bias_idx = (manual_bias <= sq1_b).argmax()
         
         sq1df_col = sq1df.filter([bname,fluxname,rowname, colname], axis=1)
         if(sq1df_off is not None):
@@ -738,6 +738,23 @@ def rs_driver(cfg, sa_data, sa_runfile, rsdf, rs_runfile, ctime=None,
                                                                 s1b_minmax_ax=s1b_minmax_ax,
                                                                 s1b_minmax_fig=s1b_minmax_fig)
 
+def save_subset(df, savename, rows = [28,29,30,31,32,33], cols = [8,9,10,11,12]):
+    '''
+    saves a small subset of the dataframe
+    '''
+    bname = '<bias>'
+    fluxname = '<flux>'
+    rowname = '<row>'
+    
+    
+    all_cols = [bname, fluxname, rowname]
+    for col in cols:
+        colname = '<safb' + str(str(col).zfill(2)) + '>'
+        all_cols.append(colname)
+    cols_df = df.filter(all_cols, axis=1)
+    rows_df = cols_df[(cols_df['<row>'].isin(rows))]
+
+    rows_df.to_csv(savename)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -763,12 +780,14 @@ def main():
         time0 = time.time()
         sa_data, sa_runfile = rd.get_ssa_tune_data(args.ctime)
         sq1df, sq1_runfile =  rd.get_sq1_tune_data(args.ctime)
+        #save_subset(sq1df, 'rowsel_on_small_sq1servo_sa.bias')
         numrows = max(sq1df['<row>'].astype(int))+1
         rows = range(0, numrows)
         sq1df_off = None
         sq1_runfile_off = None
         if(args.ctime_off is not None):
             sq1df_off, sq1_runfile_off = rd.get_sq1_tune_data(args.ctime_off)
+            #save_subset(sq1df_off, 'rowsel_off_small_sq1servo_sa.bias')
         time1 = time.time()
 
         print('Done reading files, time elapsed (s):' + str(time1-time0))
