@@ -121,7 +121,7 @@ def plot_sq1(col, row, sq1_fb_uA, max_sq1_safb_servo_uA, filter_sq1,
              b_max_sq1_safb_servo_uA_upslope, m_max_sq1_safb_servo_uA_upslope,
              s1_phi0_est, M_s1_fb,
              dI_SSA_IN_pA_dI_SQ1_IN_pA_downslope, dI_SSA_IN_pA_dI_SQ1_IN_pA_upslope,
-             sa_fb_dac_to_uA, sa_ax, cfg, show_plot=False):
+             sa_fb_dac_to_uA, cfg, show_plot=False):
     '''
     '''
     s1_fig, s1_ax = plt.subplots(figsize=(8, 6))
@@ -201,7 +201,7 @@ def plot_sq1(col, row, sq1_fb_uA, max_sq1_safb_servo_uA, filter_sq1,
                bbox=dict(edgecolor='k', facecolor='none', pad=10, linewidth=1),
                ha='left',
                va='center',
-               transform=sa_ax.transAxes)
+               transform=s1_ax.transAxes)
 
     plt.tight_layout()
 
@@ -220,9 +220,13 @@ def plot_icminmax(col, row, ic_params, ic_params2=None, ctime=None, convert_unit
     alpha = 1
     if(s1b_minmax_fig is None):
         s1b_minmax_fig, s1b_minmax_ax = plt.subplots(figsize=(8, 6))
-    (sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
-        sq1_safb_servo_maxs_sa_in_uA, max_sq1imod_idx, max_sq1imod_uA,
-        start_sq1imod_idx, start_sq1imod_uA) = ic_params
+    sq1_safb_servo_biases_uA = ic_params['bias']
+    sq1_safb_servo_mins_sa_in_uA = ic_params['fb_min']
+    sq1_safb_servo_maxs_sa_in_uA = ic_params['fb_max'] 
+    max_sq1imod_idx = ic_params['bias_max_idx']  
+    max_sq1imod_uA = sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx] - sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx]
+
+    start_sq1imod_idx = ic_params['bias_min_idx']  
     s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
                            lw=2, label='SQ1 min, rs on', color='blue', alpha=alpha)
     s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_maxs_sa_in_uA,
@@ -233,9 +237,12 @@ def plot_icminmax(col, row, ic_params, ic_params2=None, ctime=None, convert_unit
         label='$I^{SQ1}_{mod}$ = '+f'{max_sq1imod_uA:.3f} $\mu$A @ '+'$I_{SQ1B,total} = $'+f'{sq1_safb_servo_biases_uA[max_sq1imod_idx]:.1f} $\mu$A')
 
     if(ic_params is not None):
-        (sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
-            sq1_safb_servo_maxs_sa_in_uA, max_sq1imod_idx, max_sq1imod_uA,
-            start_sq1imod_idx, start_sq1imod_uA) = ic_params2
+        sq1_safb_servo_biases_uA = ic_params2['bias']
+        sq1_safb_servo_mins_sa_in_uA = ic_params2['fb_min']
+        sq1_safb_servo_maxs_sa_in_uA = ic_params2['fb_max'] 
+        max_sq1imod_idx = ic_params2['bias_max_idx']  
+        start_sq1imod_idx = ic_params2['bias_min_idx']  
+        start_sq1imod_uA = sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx]
         s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
                             lw=2, label='SQ1 min, rs off', color='aqua', alpha=alpha)
         s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_maxs_sa_in_uA,
@@ -284,9 +291,12 @@ def plot_icminmax_col(last_fig, col, ic_params, ic_params2=None, ctime=None,
     '''
     
     alpha = 0.1
-    (sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
-     sq1_safb_servo_maxs_sa_in_uA, max_sq1imod_idx, max_sq1imod_uA,
-     start_sq1imod_idx, start_sq1imod_uA) = ic_params
+    sq1_safb_servo_biases_uA = ic_params['bias']
+    sq1_safb_servo_mins_sa_in_uA = ic_params['fb_min']
+    sq1_safb_servo_maxs_sa_in_uA = ic_params['fb_max'] 
+    max_sq1imod_idx = ic_params['bias_max_idx']  
+    start_sq1imod_idx = ic_params['bias_min_idx']  
+    start_sq1imod_uA = sq1_safb_servo_biases_uA[max_sq1imod_idx]
     if(s1b_minmax_ax is None):
         s1b_minmax_fig, s1b_minmax_ax = plt.subplots(figsize=(8, 6))
     if(last_fig):
@@ -304,9 +314,12 @@ def plot_icminmax_col(last_fig, col, ic_params, ic_params2=None, ctime=None,
                                                         label='Manually Chosen Bias', linestyle='dotted')
        
         if(ic_params2 is not None):
-            (sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
-             sq1_safb_servo_maxs_sa_in_uA, max_sq1imod_idx, max_sq1imod_uA,
-             start_sq1imod_idx, start_sq1imod_uA) = ic_params2
+            sq1_safb_servo_biases_uA = ic_params2['bias']
+            sq1_safb_servo_mins_sa_in_uA = ic_params2['fb_min']
+            sq1_safb_servo_maxs_sa_in_uA = ic_params2['fb_max'] 
+            max_sq1imod_idx = ic_params2['bias_max_idx']  
+            start_sq1imod_idx = ic_params2['bias_min_idx']  
+            start_sq1imod_uA = sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx]
             s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
                                lw=2, label='SQ1 min, rs off', color='aqua', alpha=alpha)
             s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_maxs_sa_in_uA,
@@ -365,10 +378,12 @@ def plot_icminmax_col(last_fig, col, ic_params, ic_params2=None, ctime=None,
         #s1b_minmax_ax.plot([bias_limit, bias_limit], [0,sq1_safb_servo_biases_uA[-1] ], alpha=alpha, color='orange')
         #s1b_minmax_ax.plot([0, sq1_safb_servo_biases_uA[-1]], [start_sq1imod_uA, start_sq1imod_uA ], alpha=alpha, color='orange')
         if(ic_params2 is not None):
-            (sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
-             sq1_safb_servo_maxs_sa_in_uA, max_sq1imod_idx, max_sq1imod_uA,
-             start_sq1imod_idx, start_sq1imod_uA
-             ) = ic_params2
+            sq1_safb_servo_biases_uA = ic_params2['bias']
+            sq1_safb_servo_mins_sa_in_uA = ic_params2['fb_min']
+            sq1_safb_servo_maxs_sa_in_uA = ic_params2['fb_max'] 
+            max_sq1imod_idx = ic_params2['bias_max_idx']  
+            start_sq1imod_idx = ic_params2['bias_min_idx']  
+            start_sq1imod_uA = sq1_safb_servo_biases_uA[max_sq1imod_idx]
             s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
                                lw=2, color='aqua', alpha=alpha)
             s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_maxs_sa_in_uA,
@@ -465,8 +480,8 @@ def tile_plot(num_rows, num_columns, data, label, title, vmin=0, vmax=20,
     ax.set_yticks(np.arange(0, num_rows, spacing))
 
     # Labels for major ticks
-    ax.set_xticklabels(np.arange(0, num_columns+1, spacing))
-    ax.set_yticklabels(np.arange(0, num_rows+1, spacing))
+    ax.set_xticklabels(np.arange(0, num_columns, spacing))
+    ax.set_yticklabels(np.arange(0, num_rows, spacing))
 
     # Minor ticks
     ax.set_xticks(np.arange(-.5, num_columns, 1), minor=True)
