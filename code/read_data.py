@@ -31,7 +31,7 @@ def get_rsservo_data(dir_path, bias_suffix=None, run_suffix=None):
     return bias_df, mce_runfile
 
 
-def get_sq1_tune_data(dir_path, bias_suffix=None, run_suffix=None):
+def get_sq1_tune_data(dir_path, bias_suffix=None, run_suffix=None, fast_csv_reading=False):
     '''
     input: path/to/mce_folder
             grabs the first file that is found with the given suffixes
@@ -45,7 +45,7 @@ def get_sq1_tune_data(dir_path, bias_suffix=None, run_suffix=None):
         bias_suffix = '_sq1servo_sa.bias'
     if(run_suffix is None):
         run_suffix = '_sq1servo_sa.run'
-    bias_df, mce_runfile = get_bias_run_data(dir_path, bias_suffix, run_suffix)
+    bias_df, mce_runfile = get_bias_run_data(dir_path, bias_suffix, run_suffix, fast_csv_reading=fast_csv_reading)
     return bias_df, mce_runfile
 
 

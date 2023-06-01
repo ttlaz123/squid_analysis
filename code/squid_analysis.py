@@ -378,13 +378,15 @@ def main():
                         help='whether to perform rsservo analysis')
     parser.add_argument('-s', '--flip_signs', action='store_true',
                         help='whether to flip signs for safb')
+    parser.add_argument('-f', '--fast_csv_reading', action='store_true',
+                        help='Read csvs faster')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Whether to print out debug statements')
     args = parser.parse_args()
     flip_signs = args.flip_signs
     numcols = 32
     cols = range(0, numcols)
-
+    fast_csv_reading = args.fast_csv_reading
     print('Reading in files:' + str(args.ctime))
     ctime = os.path.basename(os.path.dirname(args.ctime))
     print('ctime: ' + str(ctime))
@@ -393,14 +395,14 @@ def main():
     if(args.dev_cur):
         time0 = time.time()
         sa_data, sa_runfile = rd.get_ssa_tune_data(args.ctime)
-        sq1df, sq1_runfile = rd.get_sq1_tune_data(args.ctime)
+        sq1df, sq1_runfile = rd.get_sq1_tune_data(args.ctime, fast_csv_reading=fast_csv_reading)
         all_rows = sq1df['<row>'].astype(int)
 
         rows = np.unique(all_rows)
         sq1df_off = None
         sq1_runfile_off = None
         if(args.ctime_off is not None):
-            sq1df_off, sq1_runfile_off = rd.get_sq1_tune_data(args.ctime_off)
+            sq1df_off, sq1_runfile_off = rd.get_sq1_tune_data(args.ctime_off, fast_csv_reading=fast_csv_reading)
             #save_subset(sq1df_off, 'rowsel_off_small_sq1servo_sa.bias')
         time1 = time.time()
 
