@@ -80,7 +80,7 @@ def get_rms_noise(df, bias_colname, fb_colname, zero_bias=0):
 
 
 def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
-                        convert_units=False, cfg=None, ssa_params=None,
+                        convert_units=False, cfg=None, ssa_params=None, flip_signs=False,
                         filter_sq1=True, sq1_sgfilter_window_length=5, sq1_sgfilter_poly_deg=2):
     '''
     Calculates the important parameters for each row/col squid
@@ -123,6 +123,8 @@ def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
     for b_index, grp in sq1_rowcol_df.groupby(bias_colname):
         bias = bias_dacs[b_index]
         sq1_safb = grp[fb_colname].values
+        if(flip_signs):
+            sq1_safb *= -1
         sq1_safb_curves.append(sq1_safb)
         sq1_biases.append(bias)
 
@@ -140,6 +142,7 @@ def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
                                   for sq1_safb_curve_dac in sq1_safb_curves])
     sq1_safb_maxs_dac = np.array([np.min(sq1_safb_curve_dac)
                                   for sq1_safb_curve_dac in sq1_safb_curves])
+    
 
     # To convert to current, need to flip and zero starting value, then
     # scale to SSA in current units

@@ -49,7 +49,8 @@ def get_sq1_tune_data(dir_path, bias_suffix=None, run_suffix=None):
     return bias_df, mce_runfile
 
 
-def get_bias_run_data(dir_path, bias_suffix='_sq1servo_sa.bias', run_suffix='_sq1servo_sa.run'):
+def get_bias_run_data(dir_path, bias_suffix='_sq1servo_sa.bias', run_suffix='_sq1servo_sa.run',
+                      fast_csv_reading=False):
     '''
     input: path/to/mce_folder
             grabs the first file that is found with the given suffixes
@@ -66,14 +67,17 @@ def get_bias_run_data(dir_path, bias_suffix='_sq1servo_sa.bias', run_suffix='_sq
 
     bias_path = os.path.join(bias_file)
     print('Reading: ' + bias_path)
-
-    try:
+    if(fast_csv_reading):
         bias_df = pd.read_csv(bias_path,  sep=separator,
-                              on_bad_lines='warn', index_col=False, skipinitialspace=True)
-    except TypeError:
-        print('Using old version of pandas:')
-        bias_df = pd.read_csv(bias_path,  sep=separator,
-                              error_bad_lines=False, index_col=False, skipinitialspace=True)
+                              index_col=False, engine='c')
+    else:
+        try:
+            bias_df = pd.read_csv(bias_path,  sep=separator,
+                                on_bad_lines='warn', index_col=False, skipinitialspace=True)
+        except TypeError:
+            print('Using old version of pandas:')
+            bias_df = pd.read_csv(bias_path,  sep=separator,
+                                error_bad_lines=False, index_col=False, skipinitialspace=True)
 
     print('Columns in .bias file: ' + str(bias_df.columns))
     assert len(

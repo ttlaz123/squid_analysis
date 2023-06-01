@@ -1,6 +1,6 @@
 '''
 Written by Tom Liu, adapting code from David Goldfinger
-2023 May 
+2023 June 1 last documentation update 
 '''
 import os
 import argparse
@@ -144,7 +144,7 @@ def make_grids(rows, cols, ctime, show_plot, savedir, convert_units,
 def ic_driver(sq1df, sq1_runfile, ctime=None,
               sq1df_off=None,  sq1_runfile_off=None,
               cols=range(0, 16), rows=range(0, 40),
-              plot_all_rows=False, savedir='output_data',
+              plot_all_rows=False, savedir='output_data', flip_signs=False, 
               convert_units=False, cfg=None, sa_data=None, sa_runfile=None,
               verbose=False):
     # TODO: make it automatically pick if there's no provided manually picked file
@@ -228,12 +228,12 @@ def ic_driver(sq1df, sq1_runfile, ctime=None,
 
             last_fig = (row == rows[-1])
             ic_params = cp.calculate_ic_params(sq1df_row, sq1_runfile, col, mod_thresh=20,
-                                               convert_units=False, cfg=None, ssa_params=None)
+                                               convert_units=False, cfg=None, ssa_params=None, flip_signs=flip_signs)
             if(sq1df_off is not None):
                 sq1df_off_row = sq1df_off_col[sq1df_off_col[rowname] == row]
 
                 ic_params2 = cp.calculate_ic_params(sq1df_off_row, sq1_runfile_off, col, mod_thresh=20,
-                                                    convert_units=False, cfg=None, ssa_params=None)
+                                                    convert_units=False, cfg=None, ssa_params=None, flip_signs=flip_signs)
             else:
                 ic_params2 = None
             (ic_col, ic_min, ic_max, mod,
@@ -376,10 +376,12 @@ def main():
                         help='whether to perform device current analysis')
     parser.add_argument('-r', '--rsservo', action='store_true',
                         help='whether to perform rsservo analysis')
+    parser.add_argument('-s', '--flip_signs', action='store_true',
+                        help='whether to flip signs for safb')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Whether to print out debug statements')
     args = parser.parse_args()
-
+    flip_signs = args.flip_signs
     numcols = 32
     cols = range(0, numcols)
 
@@ -414,12 +416,12 @@ def main():
                 os.makedirs(savedir)
             ic_driver(sq1df, sq1_runfile, ctime=ctime,
                       sq1df_off=sq1df_off,  sq1_runfile_off=sq1_runfile_off,
-                      savedir=savedir,  plot_all_rows=True,
+                      savedir=savedir,  plot_all_rows=True, flip_signs=flip_signs,
                       convert_units=convert_units, cfg=cfg, sa_data=sa_data, sa_runfile=sa_runfile,
                       verbose=args.verbose)
             ic_driver(sq1df, sq1_runfile, ctime=ctime,
                       sq1df_off=sq1df_off,  sq1_runfile_off=sq1_runfile_off,
-                      savedir=savedir,  plot_all_rows=False,
+                      savedir=savedir,  plot_all_rows=False,flip_signs=flip_signs,
                       convert_units=convert_units, cfg=cfg, sa_data=sa_data, sa_runfile=sa_runfile,
                       verbose=args.verbose)
 
