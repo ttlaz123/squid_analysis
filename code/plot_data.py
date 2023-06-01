@@ -1,11 +1,17 @@
+'''
+Written by Tom Liu, Documentation last updated 2023 May 31
+Handles all the plotting done in Squid tuning analysis
+'''
 
+from matplotlib.ticker import AutoMinorLocator
+from collections import OrderedDict
+import os
+import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib
+# Reduces memory leakage or something idk
 matplotlib.use('Agg')
-import numpy as np
-import os
-from collections import OrderedDict
-from matplotlib.ticker import AutoMinorLocator
+
 
 def plot_ssa_debug(sa_fb, sa_adu):
     sa_fig, sa_ax = plt.subplots(figsize=(8, 6))
@@ -22,6 +28,9 @@ def plot_ssa(cfg, sa_fb, sa_adu, sa_phi0_est, sa_max_idx,
              dV_ADU_dSAFB_DAC_downslope, dV_nV_dSAFB_uphi0_downslope, dV_nV_dSAIN_pA_downslope,
              dV_ADU_dSAFB_DAC_upslope, dV_nV_dSAFB_uphi0_upslope, dV_nV_dSAIN_pA_upslope,
              col, sa_bias_ua, Vmod_mV, M_ssa_fb_pH, show_plot=True):
+    '''
+    Plots SSA tuning results along with the optimal slopes
+    '''
     # Plot
     sa_fig, sa_ax = plt.subplots(figsize=(8, 6))
     sa_ax.plot(sa_fb, sa_adu)
@@ -123,6 +132,7 @@ def plot_sq1(col, row, sq1_fb_uA, max_sq1_safb_servo_uA, filter_sq1,
              dI_SSA_IN_pA_dI_SQ1_IN_pA_downslope, dI_SSA_IN_pA_dI_SQ1_IN_pA_upslope,
              sa_fb_dac_to_uA, cfg, show_plot=False):
     '''
+    Plots sq1 tuning curves with optimal slopes
     '''
     s1_fig, s1_ax = plt.subplots(figsize=(8, 6))
 
@@ -212,50 +222,49 @@ def plot_sq1(col, row, sq1_fb_uA, max_sq1_safb_servo_uA, filter_sq1,
     plt.close()
 
 
-def plot_icminmax(col, row, ic_params, ic_params2=None, ctime=None, convert_units=False, 
-                  savedir = '../output_data', s1b_minmax_fig=None, s1b_minmax_ax=None, 
+def plot_icminmax(col, row, ic_params, ic_params2=None, ctime=None, convert_units=False,
+                  savedir='../output_data', s1b_minmax_fig=None, s1b_minmax_ax=None,
                   show_plot=False):
-      ###########################
-    # Plot SQ1 min & max vs SQ1 bias
+    '''
+    Plots the SQ1 Min and Max against bias current for a single row on a column
+    '''
     alpha = 1
     if(s1b_minmax_fig is None):
         s1b_minmax_fig, s1b_minmax_ax = plt.subplots(figsize=(8, 6))
     sq1_safb_servo_biases_uA = ic_params['bias']
     sq1_safb_servo_mins_sa_in_uA = ic_params['fb_min']
-    sq1_safb_servo_maxs_sa_in_uA = ic_params['fb_max'] 
-    max_sq1imod_idx = ic_params['bias_max_idx']  
-    max_sq1imod_uA = sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx] - sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx]
+    sq1_safb_servo_maxs_sa_in_uA = ic_params['fb_max']
+    max_sq1imod_idx = ic_params['bias_max_idx']
+    max_sq1imod_uA = sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx] - \
+        sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx]
 
-    start_sq1imod_idx = ic_params['bias_min_idx']  
+    start_sq1imod_idx = ic_params['bias_min_idx']
     s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
-                           lw=2, label='SQ1 min, rs on', color='blue', alpha=alpha)
+                       lw=2, label='SQ1 min, rs on', color='blue', alpha=alpha)
     s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_maxs_sa_in_uA,
-                           lw=2, label='SQ1 max, rs on', color='red', alpha=alpha)
+                       lw=2, label='SQ1 max, rs on', color='red', alpha=alpha)
     s1b_minmax_ax.plot([sq1_safb_servo_biases_uA[max_sq1imod_idx], sq1_safb_servo_biases_uA[max_sq1imod_idx]],
-                           [sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx],
-                            sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx]], lw=3, color='purple', alpha=alpha,
-        label='$I^{SQ1}_{mod}$ = '+f'{max_sq1imod_uA:.3f} $\mu$A @ '+'$I_{SQ1B,total} = $'+f'{sq1_safb_servo_biases_uA[max_sq1imod_idx]:.1f} $\mu$A')
+                       [sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx],
+                        sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx]], lw=3, color='purple', alpha=alpha,
+                       label='$I^{SQ1}_{mod}$ = '+f'{max_sq1imod_uA:.3f} $\mu$A @ '+'$I_{SQ1B,total} = $'+f'{sq1_safb_servo_biases_uA[max_sq1imod_idx]:.1f} $\mu$A')
 
     if(ic_params is not None):
         sq1_safb_servo_biases_uA = ic_params2['bias']
         sq1_safb_servo_mins_sa_in_uA = ic_params2['fb_min']
-        sq1_safb_servo_maxs_sa_in_uA = ic_params2['fb_max'] 
-        max_sq1imod_idx = ic_params2['bias_max_idx']  
-        start_sq1imod_idx = ic_params2['bias_min_idx']  
+        sq1_safb_servo_maxs_sa_in_uA = ic_params2['fb_max']
+        max_sq1imod_idx = ic_params2['bias_max_idx']
+        start_sq1imod_idx = ic_params2['bias_min_idx']
         start_sq1imod_uA = sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx]
         s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
-                            lw=2, label='SQ1 min, rs off', color='aqua', alpha=alpha)
+                           lw=2, label='SQ1 min, rs off', color='aqua', alpha=alpha)
         s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_maxs_sa_in_uA,
-                            lw=2, label='SQ1 max, rs off', color='lime', alpha=alpha)
-        
+                           lw=2, label='SQ1 max, rs off', color='lime', alpha=alpha)
 
         bias_limit = sq1_safb_servo_biases_uA[start_sq1imod_idx]
         s1b_minmax_ax.plot([bias_limit, bias_limit],
-                            [0, sq1_safb_servo_biases_uA[-1]], label='Bias Limit', color='deeppink', lw=3, linestyle="dotted")
+                           [0, sq1_safb_servo_biases_uA[-1]], label='Bias Limit', color='deeppink', lw=3, linestyle="dotted")
         s1b_minmax_ax.plot([0, sq1_safb_servo_biases_uA[-1]],
-                            [start_sq1imod_uA, start_sq1imod_uA],  color='deeppink', lw=3, linestyle="dotted")
-
-    
+                           [start_sq1imod_uA, start_sq1imod_uA],  color='deeppink', lw=3, linestyle="dotted")
 
         leg = s1b_minmax_ax.legend(loc='upper left', fontsize=8)
         for lh in leg.legendHandles:
@@ -272,9 +281,11 @@ def plot_icminmax(col, row, ic_params, ic_params2=None, ctime=None, convert_unit
                 'SQ1 Total Bias Current (DAC)', fontsize=18)
             s1b_minmax_ax.set_ylim(0, 10000)
             uname = 'dac'
-        s1b_minmax_fig.suptitle(str(ctime) + ' Ic Check Column ' + str(col) + ' Row ' + str(row))
+        s1b_minmax_fig.suptitle(
+            str(ctime) + ' Ic Check Column ' + str(col) + ' Row ' + str(row))
         s1b_minmax_fig.tight_layout()
-        savename = str(ctime) + '_icminmax_units'+uname+'_row'+ str(row)+'_col' + str(col) + '.png'
+        savename = str(ctime) + '_icminmax_units'+uname + \
+            '_row' + str(row)+'_col' + str(col) + '.png'
         print('saving to: ' + os.path.join(savedir, savename))
         s1b_minmax_fig.savefig(os.path.join(savedir, savename))
         if(show_plot):
@@ -283,19 +294,21 @@ def plot_icminmax(col, row, ic_params, ic_params2=None, ctime=None, convert_unit
         print("Figures open: " + str(plt.get_fignums()))
         return s1b_minmax_fig, s1b_minmax_ax
 
+
 def plot_icminmax_col(last_fig, col, ic_params, ic_params2=None, ctime=None,
-                      s1b_minmax_ax=None, s1b_minmax_fig=None, manual_bias_idx = None, convert_units=False, 
+                      s1b_minmax_ax=None, s1b_minmax_fig=None, manual_bias_idx=None, convert_units=False,
                       show_plot=False, savedir='../output_data'):
     '''
     plots the ic col, ic min, and ic max given the ic_params. ic_params2 is assumed to be when row select is turned off
+    Returns the axes so they can be continually plotted over for the entire column
     '''
-    
+
     alpha = 0.1
     sq1_safb_servo_biases_uA = ic_params['bias']
     sq1_safb_servo_mins_sa_in_uA = ic_params['fb_min']
-    sq1_safb_servo_maxs_sa_in_uA = ic_params['fb_max'] 
-    max_sq1imod_idx = ic_params['bias_max_idx']  
-    start_sq1imod_idx = ic_params['bias_min_idx']  
+    sq1_safb_servo_maxs_sa_in_uA = ic_params['fb_max']
+    max_sq1imod_idx = ic_params['bias_max_idx']
+    start_sq1imod_idx = ic_params['bias_min_idx']
     start_sq1imod_uA = sq1_safb_servo_biases_uA[max_sq1imod_idx]
     if(s1b_minmax_ax is None):
         s1b_minmax_fig, s1b_minmax_ax = plt.subplots(figsize=(8, 6))
@@ -310,29 +323,26 @@ def plot_icminmax_col(last_fig, col, ic_params, ic_params2=None, ctime=None,
                             sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx]], lw=3, color='purple', alpha=alpha)
         if(manual_bias_idx is not None):
             s1b_minmax_ax.plot([sq1_safb_servo_biases_uA[manual_bias_idx], sq1_safb_servo_biases_uA[manual_bias_idx]],
-                           [0,sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx]], lw=2, color='pink', alpha=1, 
-                                                        label='Manually Chosen Bias', linestyle='dotted')
-       
+                               [0, sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx]], lw=2, color='pink', alpha=1,
+                               label='Manually Chosen Bias', linestyle='dotted')
+
         if(ic_params2 is not None):
             sq1_safb_servo_biases_uA = ic_params2['bias']
             sq1_safb_servo_mins_sa_in_uA = ic_params2['fb_min']
-            sq1_safb_servo_maxs_sa_in_uA = ic_params2['fb_max'] 
-            max_sq1imod_idx = ic_params2['bias_max_idx']  
-            start_sq1imod_idx = ic_params2['bias_min_idx']  
+            sq1_safb_servo_maxs_sa_in_uA = ic_params2['fb_max']
+            max_sq1imod_idx = ic_params2['bias_max_idx']
+            start_sq1imod_idx = ic_params2['bias_min_idx']
             start_sq1imod_uA = sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx]
             s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
                                lw=2, label='SQ1 min, rs off', color='aqua', alpha=alpha)
             s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_maxs_sa_in_uA,
                                lw=2, label='SQ1 max, rs off', color='lime', alpha=alpha)
-          
 
             bias_limit = sq1_safb_servo_biases_uA[start_sq1imod_idx]
             s1b_minmax_ax.plot([bias_limit, bias_limit],
                                [0, sq1_safb_servo_biases_uA[-1]], label='Bias Limit', color='deeppink', lw=3, linestyle="dotted")
             s1b_minmax_ax.plot([0, sq1_safb_servo_biases_uA[-1]],
                                [start_sq1imod_uA, start_sq1imod_uA],  color='deeppink', lw=3, linestyle="dotted")
-
-     
 
         leg = s1b_minmax_ax.legend(loc='upper left', fontsize=8)
         for lh in leg.legendHandles:
@@ -350,9 +360,11 @@ def plot_icminmax_col(last_fig, col, ic_params, ic_params2=None, ctime=None,
                 'SQ1 Total Bias Current (DAC)', fontsize=18)
             s1b_minmax_ax.set_ylim(0, 10000)
             uname = 'dac'
-        s1b_minmax_fig.suptitle(str(ctime) + ' Ic Check Column ' + str(col) + ' All Rows')
+        s1b_minmax_fig.suptitle(
+            str(ctime) + ' Ic Check Column ' + str(col) + ' All Rows')
         s1b_minmax_fig.tight_layout()
-        savename = str(ctime) + '_icminmax_units'+uname+'_summary_col' + str(col) + '.png'
+        savename = str(ctime) + '_icminmax_units'+uname + \
+            '_summary_col' + str(col) + '.png'
         print('saving to: ' + os.path.join(savedir, savename))
         s1b_minmax_fig.savefig(os.path.join(savedir, savename))
         if(show_plot):
@@ -360,7 +372,6 @@ def plot_icminmax_col(last_fig, col, ic_params, ic_params2=None, ctime=None,
         print("Figures open: " + str(plt.get_fignums()))
         plt.close('all')
         return None, None
-        
 
     else:
         s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
@@ -380,15 +391,14 @@ def plot_icminmax_col(last_fig, col, ic_params, ic_params2=None, ctime=None,
         if(ic_params2 is not None):
             sq1_safb_servo_biases_uA = ic_params2['bias']
             sq1_safb_servo_mins_sa_in_uA = ic_params2['fb_min']
-            sq1_safb_servo_maxs_sa_in_uA = ic_params2['fb_max'] 
-            max_sq1imod_idx = ic_params2['bias_max_idx']  
-            start_sq1imod_idx = ic_params2['bias_min_idx']  
+            sq1_safb_servo_maxs_sa_in_uA = ic_params2['fb_max']
+            max_sq1imod_idx = ic_params2['bias_max_idx']
+            start_sq1imod_idx = ic_params2['bias_min_idx']
             start_sq1imod_uA = sq1_safb_servo_biases_uA[max_sq1imod_idx]
             s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
                                lw=2, color='aqua', alpha=alpha)
             s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_maxs_sa_in_uA,
                                lw=2,  color='lime', alpha=alpha)
-
 
         return s1b_minmax_fig, s1b_minmax_ax
 
@@ -470,7 +480,7 @@ def tile_plot(num_rows, num_columns, data, label, title, vmin=0, vmax=20,
     fig, ax = plt.subplots()
     im = plt.imshow(data,
                     interpolation='none', aspect='equal',
-                    vmin = vmin, vmax=vmax, cmap = 'bwr')
+                    vmin=vmin, vmax=vmax, cmap='bwr')
 
     ax = plt.gca()
 
