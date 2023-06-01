@@ -150,7 +150,7 @@ def ic_driver(sq1df, sq1_runfile, ctime=None,
     # TODO: make it automatically pick if there's no provided manually picked file
     # TODO: make script auto generate pager
     manual_optbias_filepath = 'test.csv'
-    cols, manually_picked_biases = rd.read_optimal_bias_data(
+    col_bias_dict = rd.read_optimal_bias_data(
         manual_optbias_filepath)
 
     show_plot = False

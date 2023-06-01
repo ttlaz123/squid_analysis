@@ -55,21 +55,35 @@ def get_bias_run_data(dir_path, bias_suffix='_sq1servo_sa.bias', run_suffix='_sq
             grabs the first file that is found with the given suffixes
     output: the requested .run and .bias data
     '''
-    bias_file = glob.glob(f'{dir_path}/*{bias_suffix}')[0]
+    search_str = f'{dir_path}/*{bias_suffix}'
+    # spaces or commas
+    separator = r'\s*,\s*|\s+'
+    try:
+        bias_file = glob.glob(search_str)[0]
+    except IndexError as e:
+        print(e)
+        raise FileNotFoundError("No files found with pattern: " + search_str)
+
     bias_path = os.path.join(bias_file)
     print('Reading: ' + bias_path)
+
     try:
-        bias_df = pd.read_csv(bias_path, sep=',',
+        bias_df = pd.read_csv(bias_path,  sep=separator,
                               on_bad_lines='warn', index_col=False, skipinitialspace=True)
     except TypeError:
         print('Using old version of pandas:')
-        bias_df = pd.read_csv(bias_path, sep=',',
+        bias_df = pd.read_csv(bias_path,  sep=separator,
                               error_bad_lines=False, index_col=False, skipinitialspace=True)
 
     print('Columns in .bias file: ' + str(bias_df.columns))
     assert len(
         bias_df.columns) > 3, "Not enough columns in .bias file, data is improperly formatted"
-    run_file = glob.glob(f'{dir_path}/*{run_suffix}')[0]
+    search_str = f'{dir_path}/*{run_suffix}'
+    try:
+        run_file = glob.glob(search_str)[0]
+    except IndexError as e:
+        print(e)
+        raise FileNotFoundError("No files found with pattern: " + search_str)
 
     print('Reading: ' + run_file)
     mce_runfile = mce_data.MCERunfile(run_file)
@@ -91,7 +105,12 @@ def get_ssa_tune_data(dir_path, suffix='_ssa', run_ext='.run'):
     '''
     Retrieves the relevant parameters from the SSA tuning data
     '''
-    sa_tune = glob.glob(f'{dir_path}/*{suffix}')[0]
+    search_str = f'{dir_path}/*{suffix}'
+    try:
+        sa_tune = glob.glob(search_str)[0]
+    except IndexError as e:
+        print(e)
+        raise FileNotFoundError("No files found with pattern: " + search_str)
     sa_data = os.path.join(sa_tune)
     print('Reading: ' + str(sa_data))
     mcefile = mce_data.MCEFile(sa_data)
@@ -120,11 +139,14 @@ def write_optimal_bias_data(cols, biases, savename, savedir):
 def read_optimal_bias_data(data_path):
     '''
     Reads a csv file for the column and optimal biases
+    Returns dictionary from column to bias
     '''
     col_name = 'column'
     bias_name = 'optimal_bias'
 
     df = pd.read_csv(data_path)
+
     biases = df[bias_name].to_list()
     cols = df[col_name].to_list()
-    return cols, biases
+    col_bias_dict = {int(cols[i]): float(biases[i]) for i in range(len(cols))}
+    return col_bias_dict
