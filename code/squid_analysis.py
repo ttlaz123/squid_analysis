@@ -274,8 +274,8 @@ def ic_driver(sq1df, sq1_runfile, ctime=None,
         optimal_col_bias = np.mean(optimal_biases)
         optimal_col_biases.append(optimal_col_bias)
         print(optimal_col_biases)
-    rd.write_optimal_bias_data(range(32), optimal_col_biases,
-                               'test', 'output_data')
+    #rd.write_optimal_bias_data(range(32), optimal_col_biases,
+    #                           'test', 'output_data')
     savedir_grids = os.path.join(savedir, 'gridplots')
     while not os.path.exists(savedir_grids):
         os.makedirs(savedir_grids)
