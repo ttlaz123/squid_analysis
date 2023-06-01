@@ -254,7 +254,7 @@ def plot_icminmax(col, row, ic_params, ic_params2=None, ctime=None, convert_unit
         sq1_safb_servo_maxs_sa_in_uA = ic_params2['fb_max']
         max_sq1imod_idx = ic_params2['bias_max_idx']
         start_sq1imod_idx = ic_params2['bias_min_idx']
-        start_sq1imod_uA = sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx]
+        start_sq1imod_uA = sq1_safb_servo_mins_sa_in_uA[start_sq1imod_idx]
         s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
                            lw=2, label='SQ1 min, rs off', color='aqua', alpha=alpha)
         s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_maxs_sa_in_uA,
@@ -309,7 +309,6 @@ def plot_icminmax_col(last_fig, col, ic_params, ic_params2=None, ctime=None,
     sq1_safb_servo_maxs_sa_in_uA = ic_params['fb_max']
     max_sq1imod_idx = ic_params['bias_max_idx']
     start_sq1imod_idx = ic_params['bias_min_idx']
-    start_sq1imod_uA = sq1_safb_servo_biases_uA[max_sq1imod_idx]
     if(s1b_minmax_ax is None):
         s1b_minmax_fig, s1b_minmax_ax = plt.subplots(figsize=(8, 6))
     if(last_fig):
@@ -332,7 +331,7 @@ def plot_icminmax_col(last_fig, col, ic_params, ic_params2=None, ctime=None,
             sq1_safb_servo_maxs_sa_in_uA = ic_params2['fb_max']
             max_sq1imod_idx = ic_params2['bias_max_idx']
             start_sq1imod_idx = ic_params2['bias_min_idx']
-            start_sq1imod_uA = sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx]
+            start_sq1imod_uA = sq1_safb_servo_mins_sa_in_uA[start_sq1imod_idx]
             s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
                                lw=2, label='SQ1 min, rs off', color='aqua', alpha=alpha)
             s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_maxs_sa_in_uA,
@@ -340,7 +339,7 @@ def plot_icminmax_col(last_fig, col, ic_params, ic_params2=None, ctime=None,
 
             bias_limit = sq1_safb_servo_biases_uA[start_sq1imod_idx]
             s1b_minmax_ax.plot([bias_limit, bias_limit],
-                               [0, sq1_safb_servo_biases_uA[-1]], label='Bias Limit', color='deeppink', lw=3, linestyle="dotted")
+                               [0, sq1_safb_servo_biases_uA[-1]], label='Crosstalk Limit', color='deeppink', lw=3, linestyle="dotted")
             s1b_minmax_ax.plot([0, sq1_safb_servo_biases_uA[-1]],
                                [start_sq1imod_uA, start_sq1imod_uA],  color='deeppink', lw=3, linestyle="dotted")
 

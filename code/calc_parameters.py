@@ -93,6 +93,8 @@ def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
             convert_units -- whether to convert from DAC to microamps
             cfg -- config file for calibrating DAC to microamps
             ssa_params -- parameters for calibrating DAC to microamps
+            flip_signs -- whether to flip the sign of the SAFB. This is necessary 
+                            for Short Keck
             filter parameters -- for applying the savgol filters
     Output: An IC_params dictionary with 
             'fb_min' -- list of lower bound for fb curve 
