@@ -20,7 +20,8 @@ warnings.filterwarnings("ignore")
 
 def fill_grid_data(value, row, col, grid=None, max_rows=41, max_cols=32):
     '''
-    Fills in grid with a value
+    Fills in grid with a value at location [row, col]
+    If grid is None, initialize with grid of size [max_rows, max_cols]
     '''
     if(grid is None):
         grid = np.zeros((max_rows, max_cols))
@@ -28,36 +29,51 @@ def fill_grid_data(value, row, col, grid=None, max_rows=41, max_cols=32):
     return grid
 
 
-def get_icmaxcolmod(ic_params, ic_params2, manual_bias=None):
+def get_icmaxcolmod(ic_params_rson, ic_params_rsoff, manual_bias=None):
     '''
-    Gets ic col, ic max, and modulation given the ic_params
+    Given ic_params, obtain standard squid parameters
+    Args:
+        ic_params_rson (dict): Dictionary containing the parameters for the "on" state.
+        ic_params_rsoff (dict): Dictionary containing the parameters for the "off" state.
+        manual_bias (int, optional): Index of the manual bias. Defaults to None.
+    
+    Returns:
+        tuple: A tuple containing the following values:
+            ic_col (float): The value of ic_col.
+            ic_min (float): The value of ic_min.
+            ic_max (float): The value of ic_max.
+            mod (float): The value of mod.
+            optimal_bias (float): The value of optimal_bias.
+            crosstalk_bias (float): The value of crosstalk_bias.
+            manual_mod (float): The value of manual_mod.
     '''
-    sq1_safb_servo_biases_uA = ic_params['bias']
-    sq1_safb_servo_mins_sa_in_uA = ic_params['fb_min']
-    sq1_safb_servo_maxs_sa_in_uA = ic_params['fb_max']
-    max_sq1imod_idx = ic_params['bias_max_idx']
-    start_sq1imod_idx = ic_params['bias_min_idx']
+    sq1_safb_biases = ic_params_rson['bias']
+    sq1_safb_min = ic_params_rson['fb_min']
+    sq1_safb_max = ic_params_rson['fb_max']
+    max_sq1imod_idx = ic_params_rson['bias_max_idx']
+    start_sq1imod_idx = ic_params_rson['bias_min_idx']
 
-    ic_min = sq1_safb_servo_mins_sa_in_uA[start_sq1imod_idx]
-    ic_max = sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx]
-    mod = -(sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx] -
-            sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx])
-    manual_mod = None
+    ic_min = sq1_safb_min[start_sq1imod_idx]
+    ic_max = sq1_safb_max[max_sq1imod_idx]
+    mod = sq1_safb_max[max_sq1imod_idx] - sq1_safb_min[max_sq1imod_idx]
+    optimal_bias = sq1_safb_biases[max_sq1imod_idx]
+
+
+    manual_mod = -1
     if(manual_bias is not None):
-        manual_mod = -(sq1_safb_servo_mins_sa_in_uA[manual_bias] -
-                       sq1_safb_servo_maxs_sa_in_uA[manual_bias])
-    optimal_bias = sq1_safb_servo_biases_uA[max_sq1imod_idx]
+        manual_mod = (sq1_safb_max[manual_bias] -
+                       sq1_safb_min[manual_bias])
+    
 
     ic_col = -1
-    if(ic_params2 is not None):
-        sq1_safb_servo_biases_uA = ic_params2['bias']
-        sq1_safb_servo_mins_sa_in_uA = ic_params2['fb_min']
-        sq1_safb_servo_maxs_sa_in_uA = ic_params2['fb_max']
-        max_sq1imod_idx = ic_params2['bias_max_idx']
-        start_sq1imod_idx = ic_params2['bias_min_idx']
+    crosstalk_bias = -1
+    if(ic_params_rsoff is not None):
+        sq1_safb_biases = ic_params_rsoff['bias']
+        sq1_safb_min = ic_params_rsoff['fb_min']
+        start_sq1imod_idx = ic_params_rsoff['bias_min_idx']
 
-        ic_col = sq1_safb_servo_maxs_sa_in_uA[start_sq1imod_idx]
-        crosstalk_bias = sq1_safb_servo_biases_uA[start_sq1imod_idx]
+        ic_col = sq1_safb_min[start_sq1imod_idx]
+        crosstalk_bias = sq1_safb_biases[start_sq1imod_idx]
 
     return ic_col, ic_min, ic_max, mod, optimal_bias, crosstalk_bias, manual_mod
 
