@@ -149,10 +149,20 @@ def ic_driver(sq1df, sq1_runfile, ctime=None,
               verbose=False):
     # TODO: make it automatically pick if there's no provided manually picked file
     # TODO: make script auto generate pager
-    manual_optbias_filepath = 'test.csv'
-    col_bias_dict = rd.read_optimal_bias_data(
-        manual_optbias_filepath)
-
+    #manual_optbias_filepath = 'output_data/test.csv'
+    # col_bias_dict = rd.read_optimal_bias_data(
+    #    manual_optbias_filepath)
+    #manually_picked_biases = col_bias_dict
+    manually_picked_biases = np.array([
+        6000, 7500, 6000, 8000,
+        5000, 7000, 7500, 6500,
+        9000, 7500, 8000, 8000,
+        8000, 8000, 8000, 8000,
+        9000, 9000, 9000, 9000,
+        9000, 9000, 9000, 9000,
+        9000, 9000, 9000, 9000,
+        9000, 9000, 9000, 9000,
+    ])
     show_plot = False
 
     bname = '<bias>'
