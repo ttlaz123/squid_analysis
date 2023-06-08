@@ -70,6 +70,7 @@ def get_bias_run_data(dir_path, bias_suffix='_sq1servo_sa.bias', run_suffix='_sq
     if(fast_csv_reading):
         bias_df = pd.read_csv(bias_path,  sep='\s+',
                               index_col=False, engine='c')
+        
     else:
         try:
             bias_df = pd.read_csv(bias_path,  sep=separator,
