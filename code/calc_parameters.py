@@ -80,7 +80,7 @@ def get_rms_noise(df, bias_colname, fb_colname, zero_bias=0):
 
 
 def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
-                        convert_units=False, cfg=None, ssa_params=None,
+                        convert_units=False, cfg=None, ssa_params=None, flip_signs=False,
                         filter_sq1=True, sq1_sgfilter_window_length=5, sq1_sgfilter_poly_deg=2):
     '''
     Calculates the important parameters for each row/col squid
@@ -93,6 +93,8 @@ def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
             convert_units -- whether to convert from DAC to microamps
             cfg -- config file for calibrating DAC to microamps
             ssa_params -- parameters for calibrating DAC to microamps
+            flip_signs -- whether to flip the sign of the SAFB. This is necessary 
+                            for Short Keck
             filter parameters -- for applying the savgol filters
     Output: An IC_params dictionary with 
             'fb_min' -- list of lower bound for fb curve 
@@ -123,6 +125,8 @@ def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
     for b_index, grp in sq1_rowcol_df.groupby(bias_colname):
         bias = bias_dacs[b_index]
         sq1_safb = grp[fb_colname].values
+        if(flip_signs):
+            sq1_safb *= -1
         sq1_safb_curves.append(sq1_safb)
         sq1_biases.append(bias)
 
@@ -140,6 +144,7 @@ def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
                                   for sq1_safb_curve_dac in sq1_safb_curves])
     sq1_safb_maxs_dac = np.array([np.min(sq1_safb_curve_dac)
                                   for sq1_safb_curve_dac in sq1_safb_curves])
+    
 
     # To convert to current, need to flip and zero starting value, then
     # scale to SSA in current units
@@ -172,12 +177,7 @@ def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
 
     return ic_params
 
-
-def calculate_ssa_parameters(sa_data, sa_runfile, cfg, col):
-    '''
-    Takes in the ssa data to plot all the parameters for each ssa column 
-    Adapted from David Goldfinger's script
-    '''
+def get_ssa_bias_fb_range(sa_runfile):
     sa_bias = sa_runfile.Item('HEADER', f'RB sa bias', type='int')
     # Which SSAs were biased with nonzero bias?
     sa_biased_columns = np.nonzero(sa_bias)[0]
@@ -185,17 +185,33 @@ def calculate_ssa_parameters(sa_data, sa_runfile, cfg, col):
     sa_fb0, d_sa_fb, n_sa_fb = tuple([
         int(i) for i in sa_runfile.Item('par_ramp', 'par_step loop1 par1')])
     sa_fb = sa_fb0 + d_sa_fb*np.arange(n_sa_fb)
-    # Convert to physical current using configuration file info
+    
+    return sa_bias, sa_fb
 
+def get_sample_num(sa_runfile, col):
+    rc = int(col/8)+1
+    sample_num = sa_runfile.Item(
+        'HEADER', f'RB rc{rc} sample_num', type='int')[0]
+    return sample_num
+
+def calculate_ssa_parameters(sa_data, sa_runfile, cfg, col):
+    '''
+    Takes in the ssa data to plot all the parameters for each ssa column 
+    Adapted from David Goldfinger's script
+    '''
+    
+    # Convert to physical current using configuration file info
+    sa_bias, sa_fb = get_ssa_bias_fb_range(sa_runfile)
     sa_fb_dac_to_uA = get_fb_dac_to_uA(cfg)
+
     sa_fb = np.multiply(sa_fb, sa_fb_dac_to_uA)
+
     nrow, ncol, sa_npt = sa_data.data.shape
     sa_coadd_adu = np.average([sa_data.data[row][col]
                                for row in range(nrow)], axis=0)
 
-    rc = int(col/8)+1
-    sample_num = sa_runfile.Item(
-        'HEADER', f'RB rc{rc} sample_num', type='int')[0]
+    sample_num = get_sample_num(sa_runfile, col)
+    
     sa_adu = sa_coadd_adu/sample_num
     # Convert sa_fb and sa_adu to physical units.
     sa_bias_dac = sa_bias[col]

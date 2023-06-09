@@ -1,0 +1,141 @@
+Auto tuning run started Tue May 16 21:30:47 2023 UTC
+Dir:  /data/mce2/20230516
+Name: 1684272647
+
+Executing mce_check_init -q
+Exit Status: 0
+
+Executing mce_make_config /data/mce2/20230516/experiment.cfg /data/mce2/20230516/config_mce_auto_setup_20230516
+Removing existing '/data/mce2/20230516/config_mce_auto_setup_20230516'
+Exit Status: 0
+
+Executing /data/mce2/20230516/config_mce_auto_setup_20230516
+Exit Status: 0
+
+Executing ramp_sa_fb 1684272647/1684272650_RCs_ssa s 0
+count=120 step=100 ratio=0.500000
+Now running a sweep of sa_fb (0 to 120 *100 ) for each of 1 bias value(s)
+/usr/mce/mce_script/script/ramp_sa_fb elapsed time:  1  s
+Exit Status: 0
+
+Executing mce_acq_register 1684272650 tune_ramp /data/mce2/20230516/1684272647/1684272650_RCs_ssa 120 
+Exit Status: 0
+
+Executing mce_make_config /data/mce2/20230516/experiment.cfg /data/mce2/20230516/config_mce_auto_setup_20230516
+Removing existing '/data/mce2/20230516/config_mce_auto_setup_20230516'
+Exit Status: 0
+
+Executing /data/mce2/20230516/config_mce_auto_setup_20230516
+Exit Status: 0
+
+Executing mce_make_config /data/mce2/20230516/experiment.cfg /data/mce2/20230516/config_mce_auto_setup_20230516
+Removing existing '/data/mce2/20230516/config_mce_auto_setup_20230516'
+Exit Status: 0
+
+Executing /data/mce2/20230516/config_mce_auto_setup_20230516
+Exit Status: 0
+
+Executing /usr/mce/bin/rs_servo -p 50 s 1684272647/1684272656_RCs_rsservo
+Card bits=0xf, column count=32 num_rows_reported=41
+SQ1 bias unchanged.
+sq1servo: elapsed time is 1.000000s 
+Exit Status: 0
+
+Executing mce_acq_register 1684272656 tune_servo /data/mce2/20230516/1684272647/1684272656_RCs_rsservo 100 
+Exit Status: 0
+
+Executing mce_make_config /data/mce2/20230516/experiment.cfg /data/mce2/20230516/config_mce_auto_setup_20230516
+Removing existing '/data/mce2/20230516/config_mce_auto_setup_20230516'
+Exit Status: 0
+
+Executing /data/mce2/20230516/config_mce_auto_setup_20230516
+Exit Status: 0
+
+Executing mce_make_config /data/mce2/20230516/experiment.cfg /data/mce2/20230516/config_mce_auto_setup_20230516
+Removing existing '/data/mce2/20230516/config_mce_auto_setup_20230516'
+Exit Status: 0
+
+Executing /data/mce2/20230516/config_mce_auto_setup_20230516
+Exit Status: 0
+
+Executing /usr/mce/bin/sq1servo_sa -p 50 s 1684272647/1684272681_RCs_sq1servo_sa
+Card bits=0xf, column count=32 num_rows_reported=41
+sq1servo: elapsed time is 250.000000s 
+Exit Status: 0
+
+Executing mce_acq_register 1684272681 tune_servo /data/mce2/20230516/1684272647/1684272681_RCs_sq1servo_sa 24000 
+Exit Status: 0
+
+Executing mce_make_config /data/mce2/20230516/experiment.cfg /data/mce2/20230516/config_mce_auto_setup_20230516
+Removing existing '/data/mce2/20230516/config_mce_auto_setup_20230516'
+Exit Status: 0
+
+Executing /data/mce2/20230516/config_mce_auto_setup_20230516
+Exit Status: 0
+
+Executing mce_make_config /data/mce2/20230516/experiment.cfg /data/mce2/20230516/config_mce_auto_setup_20230516
+Removing existing '/data/mce2/20230516/config_mce_auto_setup_20230516'
+Exit Status: 0
+
+Executing /data/mce2/20230516/config_mce_auto_setup_20230516
+Exit Status: 0
+
+Executing ramp_sq1_fb 1684272647/1684274750_RCs_sq1ramp s
+0 x 32
+/usr/mce/mce_script/script/ramp_sq1_fb elapsed time:  0
+Exit Status: 0
+
+Executing mce_acq_register 1684274750 tune_ramp /data/mce2/20230516/1684272647/1684274750_RCs_sq1ramp 121 
+Exit Status: 0
+
+Executing mce_make_config /data/mce2/20230516/experiment.cfg /data/mce2/20230516/config_mce_auto_setup_20230516
+Removing existing '/data/mce2/20230516/config_mce_auto_setup_20230516'
+Exit Status: 0
+
+Executing /data/mce2/20230516/config_mce_auto_setup_20230516
+Exit Status: 0
+plot_reg failed because plot_out = None
+
+Executing mce_make_config /data/mce2/20230516/experiment.cfg /data/mce2/20230516/config_mce_auto_setup_20230516
+Removing existing '/data/mce2/20230516/config_mce_auto_setup_20230516'
+Exit Status: 0
+
+Executing /data/mce2/20230516/config_mce_auto_setup_20230516
+Exit Status: 0
+
+Executing ramp_sq1_fb 1684272647/1684274775_RCs_sq1rampc s
+0 x 32
+/usr/mce/mce_script/script/ramp_sq1_fb elapsed time:  1
+Exit Status: 0
+
+Executing mce_acq_register 1684274775 tune_ramp /data/mce2/20230516/1684272647/1684274775_RCs_sq1rampc 121 
+Exit Status: 0
+plot_reg failed because plot_out = None
+
+Executing mce_make_config /data/mce2/20230516/experiment.cfg /data/mce2/20230516/config_mce_auto_setup_20230516
+Removing existing '/data/mce2/20230516/config_mce_auto_setup_20230516'
+Exit Status: 0
+
+Executing /data/mce2/20230516/config_mce_auto_setup_20230516
+Exit Status: 0
+
+Executing mce_make_config /data/mce2/20230516/experiment.cfg /data/mce2/20230516/config_mce_auto_setup_20230516
+Removing existing '/data/mce2/20230516/config_mce_auto_setup_20230516'
+Exit Status: 0
+
+Executing /data/mce2/20230516/config_mce_auto_setup_20230516
+Exit Status: 0
+
+Executing ramp_sq1_tes_bias 1684272647/1684274800_RCs_sq1ramptes s
+/usr/mce/mce_script/script/ramp_sq1_tes_bias elapsed time:  0
+Exit Status: 0
+
+Executing mce_acq_register 1684274800 tune_ramp /data/mce2/20230516/1684272647/1684274800_RCs_sq1ramptes 50 
+Exit Status: 0
+
+Executing mce_make_config /data/mce2/20230516/experiment.cfg /data/mce2/20230516/config_mce_auto_setup_20230516
+Removing existing '/data/mce2/20230516/config_mce_auto_setup_20230516'
+Exit Status: 0
+
+Executing /data/mce2/20230516/config_mce_auto_setup_20230516
+Exit Status: 0

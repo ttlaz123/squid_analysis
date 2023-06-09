@@ -1,6 +1,6 @@
 '''
 Written by Tom Liu, adapting code from David Goldfinger
-2023 May 
+2023 June 1 last documentation update 
 '''
 import os
 import argparse
@@ -20,7 +20,8 @@ warnings.filterwarnings("ignore")
 
 def fill_grid_data(value, row, col, grid=None, max_rows=41, max_cols=32):
     '''
-    Fills in grid with a value
+    Fills in grid with a value at location [row, col]
+    If grid is None, initialize with grid of size [max_rows, max_cols]
     '''
     if(grid is None):
         grid = np.zeros((max_rows, max_cols))
@@ -28,36 +29,51 @@ def fill_grid_data(value, row, col, grid=None, max_rows=41, max_cols=32):
     return grid
 
 
-def get_icmaxcolmod(ic_params, ic_params2, manual_bias=None):
+def get_icmaxcolmod(ic_params_rson, ic_params_rsoff, manual_bias=None):
     '''
-    Gets ic col, ic max, and modulation given the ic_params
+    Given ic_params, obtain standard squid parameters
+    Args:
+        ic_params_rson (dict): Dictionary containing the parameters for the "on" state.
+        ic_params_rsoff (dict): Dictionary containing the parameters for the "off" state.
+        manual_bias (int, optional): Index of the manual bias. Defaults to None.
+    
+    Returns:
+        tuple: A tuple containing the following values:
+            ic_col (float): The value of ic_col.
+            ic_min (float): The value of ic_min.
+            ic_max (float): The value of ic_max.
+            mod (float): The value of mod.
+            optimal_bias (float): The value of optimal_bias.
+            crosstalk_bias (float): The value of crosstalk_bias.
+            manual_mod (float): The value of manual_mod.
     '''
-    sq1_safb_servo_biases_uA = ic_params['bias']
-    sq1_safb_servo_mins_sa_in_uA = ic_params['fb_min']
-    sq1_safb_servo_maxs_sa_in_uA = ic_params['fb_max']
-    max_sq1imod_idx = ic_params['bias_max_idx']
-    start_sq1imod_idx = ic_params['bias_min_idx']
+    sq1_safb_biases = ic_params_rson['bias']
+    sq1_safb_min = ic_params_rson['fb_min']
+    sq1_safb_max = ic_params_rson['fb_max']
+    max_sq1imod_idx = ic_params_rson['bias_max_idx']
+    start_sq1imod_idx = ic_params_rson['bias_min_idx']
 
-    ic_min = sq1_safb_servo_mins_sa_in_uA[start_sq1imod_idx]
-    ic_max = sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx]
-    mod = -(sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx] -
-            sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx])
-    manual_mod = None
+    ic_min = sq1_safb_min[start_sq1imod_idx]
+    ic_max = sq1_safb_max[max_sq1imod_idx]
+    mod = sq1_safb_max[max_sq1imod_idx] - sq1_safb_min[max_sq1imod_idx]
+    optimal_bias = sq1_safb_biases[max_sq1imod_idx]
+
+
+    manual_mod = -1
     if(manual_bias is not None):
-        manual_mod = -(sq1_safb_servo_mins_sa_in_uA[manual_bias] -
-                       sq1_safb_servo_maxs_sa_in_uA[manual_bias])
-    optimal_bias = sq1_safb_servo_biases_uA[max_sq1imod_idx]
+        manual_mod = (sq1_safb_max[manual_bias] -
+                       sq1_safb_min[manual_bias])
+    
 
     ic_col = -1
-    if(ic_params2 is not None):
-        sq1_safb_servo_biases_uA = ic_params2['bias']
-        sq1_safb_servo_mins_sa_in_uA = ic_params2['fb_min']
-        sq1_safb_servo_maxs_sa_in_uA = ic_params2['fb_max']
-        max_sq1imod_idx = ic_params2['bias_max_idx']
-        start_sq1imod_idx = ic_params2['bias_min_idx']
+    crosstalk_bias = -1
+    if(ic_params_rsoff is not None):
+        sq1_safb_biases = ic_params_rsoff['bias']
+        sq1_safb_min = ic_params_rsoff['fb_min']
+        start_sq1imod_idx = ic_params_rsoff['bias_min_idx']
 
-        ic_col = sq1_safb_servo_maxs_sa_in_uA[start_sq1imod_idx]
-        crosstalk_bias = sq1_safb_servo_biases_uA[start_sq1imod_idx]
+        ic_col = sq1_safb_min[start_sq1imod_idx]
+        crosstalk_bias = sq1_safb_biases[start_sq1imod_idx]
 
     return ic_col, ic_min, ic_max, mod, optimal_bias, crosstalk_bias, manual_mod
 
@@ -144,7 +160,7 @@ def make_grids(rows, cols, ctime, show_plot, savedir, convert_units,
 def ic_driver(sq1df, sq1_runfile, ctime=None,
               sq1df_off=None,  sq1_runfile_off=None,
               cols=range(0, 16), rows=range(0, 40),
-              plot_all_rows=False, savedir='output_data',
+              plot_all_rows=False, savedir='output_data', flip_signs=False, 
               convert_units=False, cfg=None, sa_data=None, sa_runfile=None,
               verbose=False):
     # TODO: make it automatically pick if there's no provided manually picked file
@@ -228,12 +244,12 @@ def ic_driver(sq1df, sq1_runfile, ctime=None,
 
             last_fig = (row == rows[-1])
             ic_params = cp.calculate_ic_params(sq1df_row, sq1_runfile, col, mod_thresh=20,
-                                               convert_units=False, cfg=None, ssa_params=None)
+                                               convert_units=False, cfg=None, ssa_params=None, flip_signs=flip_signs)
             if(sq1df_off is not None):
                 sq1df_off_row = sq1df_off_col[sq1df_off_col[rowname] == row]
 
                 ic_params2 = cp.calculate_ic_params(sq1df_off_row, sq1_runfile_off, col, mod_thresh=20,
-                                                    convert_units=False, cfg=None, ssa_params=None)
+                                                    convert_units=False, cfg=None, ssa_params=None, flip_signs=flip_signs)
             else:
                 ic_params2 = None
             (ic_col, ic_min, ic_max, mod,
@@ -274,8 +290,8 @@ def ic_driver(sq1df, sq1_runfile, ctime=None,
         optimal_col_bias = np.mean(optimal_biases)
         optimal_col_biases.append(optimal_col_bias)
         print(optimal_col_biases)
-    rd.write_optimal_bias_data(range(32), optimal_col_biases,
-                               'test', 'output_data')
+    #rd.write_optimal_bias_data(range(32), optimal_col_biases,
+    #                           'test', 'output_data')
     savedir_grids = os.path.join(savedir, 'gridplots')
     while not os.path.exists(savedir_grids):
         os.makedirs(savedir_grids)
@@ -376,13 +392,17 @@ def main():
                         help='whether to perform device current analysis')
     parser.add_argument('-r', '--rsservo', action='store_true',
                         help='whether to perform rsservo analysis')
+    parser.add_argument('-s', '--flip_signs', action='store_true',
+                        help='whether to flip signs for safb')
+    parser.add_argument('-f', '--fast_csv_reading', action='store_true',
+                        help='Read csvs faster')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Whether to print out debug statements')
     args = parser.parse_args()
-
+    flip_signs = args.flip_signs
     numcols = 32
     cols = range(0, numcols)
-
+    fast_csv_reading = args.fast_csv_reading
     print('Reading in files:' + str(args.ctime))
     ctime = os.path.basename(os.path.dirname(args.ctime))
     print('ctime: ' + str(ctime))
@@ -391,14 +411,14 @@ def main():
     if(args.dev_cur):
         time0 = time.time()
         sa_data, sa_runfile = rd.get_ssa_tune_data(args.ctime)
-        sq1df, sq1_runfile = rd.get_sq1_tune_data(args.ctime)
+        sq1df, sq1_runfile = rd.get_sq1_tune_data(args.ctime, fast_csv_reading=fast_csv_reading)
         all_rows = sq1df['<row>'].astype(int)
 
         rows = np.unique(all_rows)
         sq1df_off = None
         sq1_runfile_off = None
         if(args.ctime_off is not None):
-            sq1df_off, sq1_runfile_off = rd.get_sq1_tune_data(args.ctime_off)
+            sq1df_off, sq1_runfile_off = rd.get_sq1_tune_data(args.ctime_off, fast_csv_reading=fast_csv_reading)
             #save_subset(sq1df_off, 'rowsel_off_small_sq1servo_sa.bias')
         time1 = time.time()
 
@@ -414,12 +434,12 @@ def main():
                 os.makedirs(savedir)
             ic_driver(sq1df, sq1_runfile, ctime=ctime,
                       sq1df_off=sq1df_off,  sq1_runfile_off=sq1_runfile_off,
-                      savedir=savedir,  plot_all_rows=True,
+                      savedir=savedir,  plot_all_rows=True, flip_signs=flip_signs,
                       convert_units=convert_units, cfg=cfg, sa_data=sa_data, sa_runfile=sa_runfile,
                       verbose=args.verbose)
             ic_driver(sq1df, sq1_runfile, ctime=ctime,
                       sq1df_off=sq1df_off,  sq1_runfile_off=sq1_runfile_off,
-                      savedir=savedir,  plot_all_rows=False,
+                      savedir=savedir,  plot_all_rows=False,flip_signs=flip_signs,
                       convert_units=convert_units, cfg=cfg, sa_data=sa_data, sa_runfile=sa_runfile,
                       verbose=args.verbose)
 
