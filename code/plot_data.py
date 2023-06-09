@@ -14,6 +14,9 @@ matplotlib.use('Agg')
 
 
 def plot_ssa_debug(sa_fb, sa_adu):
+    """
+    DEPRECATED
+    """
     sa_fig, sa_ax = plt.subplots(figsize=(8, 6))
     sa_ax.plot(sa_fb, sa_adu)
     # plt.show()
@@ -29,6 +32,7 @@ def plot_ssa(cfg, sa_fb, sa_adu, sa_phi0_est, sa_max_idx,
              dV_ADU_dSAFB_DAC_upslope, dV_nV_dSAFB_uphi0_upslope, dV_nV_dSAIN_pA_upslope,
              col, sa_bias_ua, Vmod_mV, M_ssa_fb_pH, show_plot=True):
     '''
+    DEPRECATED
     Plots SSA tuning results along with the optimal slopes
     '''
     # Plot
@@ -132,6 +136,7 @@ def plot_sq1(col, row, sq1_fb_uA, max_sq1_safb_servo_uA, filter_sq1,
              dI_SSA_IN_pA_dI_SQ1_IN_pA_downslope, dI_SSA_IN_pA_dI_SQ1_IN_pA_upslope,
              sa_fb_dac_to_uA, cfg, show_plot=False):
     '''
+    DEPRECATED
     Plots sq1 tuning curves with optimal slopes
     '''
     s1_fig, s1_ax = plt.subplots(figsize=(8, 6))
@@ -222,38 +227,137 @@ def plot_sq1(col, row, sq1_fb_uA, max_sq1_safb_servo_uA, filter_sq1,
     plt.close()
 
 
-def plot_icminmax(col, row, ic_params, ic_params2=None, ctime=None, convert_units=False,
-                  savedir='../output_data', s1b_minmax_fig=None, s1b_minmax_ax=None,
+def plot_iccurve(ic_params, ax, alpha=1,
+                 min_label=None, min_color=None,
+                 max_label=None, max_color=None,
+                 mod_label=None, mod_color=None,
+                 thresh_label=None, thresh_color=None,
+                 picked_label=None, picked_color=None, picked_bias_idx=None):
+    """
+    Plots an I-V curve with specified parameters and annotations.
+
+    Args:
+        ic_params (dict): Dictionary containing the following keys:
+            - 'bias': List or array of bias currents.
+            - 'fb_min': List or array of minimum feedback currents.
+            - 'fb_max': List or array of maximum feedback currents.
+            - 'bias_max_idx': Index of the maximum bias current.
+            - 'bias_min_idx': Index of the bias current at which modulation begins.
+
+        ax (AxesSubplot): The matplotlib axes on which to plot the I-V curve.
+
+        alpha (float, optional): Transparency value for the plotted curves. Defaults to 1.
+
+        min_label (str, optional): Label for the minimum feedback current curve. Defaults to None.
+
+        min_color (str or tuple, optional): Color for the minimum feedback current curve. Defaults to None.
+
+        max_label (str, optional): Label for the maximum feedback current curve. Defaults to None.
+
+        max_color (str or tuple, optional): Color for the maximum feedback current curve. Defaults to None.
+
+        mod_label (str, optional): Label for the modified feedback current curve. Defaults to None.
+
+        mod_color (str or tuple, optional): Color for the modified feedback current curve. Defaults to None.
+
+        thresh_label (str, optional): Label for the threshold lines. Defaults to None.
+
+        thresh_color (str or tuple, optional): Color for the threshold lines. Defaults to None.
+
+        picked_label (str, optional): Label for the picked bias current annotation. Defaults to None.
+
+        picked_color (str or tuple, optional): Color for the picked bias current annotation. Defaults to None.
+
+        picked_bias_idx (int, optional): Index of the picked bias current. Defaults to None.
+
+    Returns:
+        AxesSubplot: The matplotlib axes with the I-V curve plot.
+    """
+    bias_current = ic_params['bias']
+    fb_mins_current = ic_params['fb_min']
+    fb_maxes_current = ic_params['fb_max']
+    max_sq1imod_idx = ic_params['bias_max_idx']
+    start_sq1imod_idx = ic_params['bias_min_idx']
+
+    ax.plot(bias_current, fb_mins_current, lw=2,
+            label=min_label, color=min_color, alpha=alpha)
+    ax.plot(bias_current, fb_maxes_current, lw=2,
+            label=max_label, color=max_color, alpha=alpha)
+
+    if(mod_label is not None):
+        xs = [bias_current[max_sq1imod_idx], bias_current[max_sq1imod_idx]]
+        ys = [fb_mins_current[max_sq1imod_idx],
+              fb_maxes_current[max_sq1imod_idx]]
+        ax.plot(xs, ys, lw=3,
+                label=mod_label, color=mod_color, alpha=alpha)
+    if(thresh_label is not None):
+        xh = [0, bias_current[-1]]
+        yh = [fb_mins_current[start_sq1imod_idx],
+              fb_mins_current[start_sq1imod_idx]]
+        xv = [bias_current[max_sq1imod_idx], bias_current[max_sq1imod_idx]]
+        yv = [0, max(fb_maxes_current)]
+        ax.plot(xh, yh, linestyle="dotted", lw=3,
+                label=thresh_label, color=thresh_color, alpha=alpha)
+        ax.plot(xv, yv, linestyle="dotted", lw=3,
+                color=thresh_color, alpha=alpha)
+    if(picked_bias_idx is not None):
+        xh = [0, bias_current[picked_bias_idx]]
+        yh = [fb_maxes_current[picked_bias_idx],
+              fb_maxes_current[picked_bias_idx]]
+        xv = [bias_current[picked_bias_idx], bias_current[picked_bias_idx]]
+        yv = [0, fb_maxes_current[picked_bias_idx]]
+        ax.plot(xh, yh, linestyle="dotted", lw=2,
+                label=picked_label, color=picked_color, alpha=alpha)
+        ax.plot(xv, yv, linestyle="dotted", lw=2,
+                color=picked_color, alpha=alpha)
+
+    return ax
+
+
+def plot_icminmax(col, row, ic_params_rson, ic_params_rsoff=None,
+                  ctime=None, convert_units=False,
+                  savedir='output_data',
+                  fig=None, ax=None,
                   show_plot=False):
     '''
     Plots the SQ1 Min and Max against bias current for a single row on a column
     '''
     alpha = 1
-    if(s1b_minmax_fig is None):
-        s1b_minmax_fig, s1b_minmax_ax = plt.subplots(figsize=(8, 6))
-    sq1_safb_servo_biases_uA = ic_params['bias']
-    sq1_safb_servo_mins_sa_in_uA = ic_params['fb_min']
-    sq1_safb_servo_maxs_sa_in_uA = ic_params['fb_max']
-    max_sq1imod_idx = ic_params['bias_max_idx']
-    max_sq1imod_uA = sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx] - \
-        sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx]
+    figsize = (8, 6)
+    sq1min_rson_label = 'SQ1 min, rs on'
+    sq1min_rson_color = 'blue'
+    sq1max_rson_label = 'SQ1 max, rs on'
+    sq1max_rson_color = 'red'
 
-    start_sq1imod_idx = ic_params['bias_min_idx']
-    s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
-                       lw=2, label='SQ1 min, rs on', color='blue', alpha=alpha)
-    s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_maxs_sa_in_uA,
-                       lw=2, label='SQ1 max, rs on', color='red', alpha=alpha)
-    s1b_minmax_ax.plot([sq1_safb_servo_biases_uA[max_sq1imod_idx], sq1_safb_servo_biases_uA[max_sq1imod_idx]],
-                       [sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx],
-                        sq1_safb_servo_maxs_sa_in_uA[max_sq1imod_idx]], lw=3, color='purple', alpha=alpha,
-                       label='$I^{SQ1}_{mod}$ = '+f'{max_sq1imod_uA:.3f} $\mu$A @ '+'$I_{SQ1B,total} = $'+f'{sq1_safb_servo_biases_uA[max_sq1imod_idx]:.1f} $\mu$A')
+    max_mod_color = 'purple'
+    max_mod_label = ('$I^{SQ1}_{mod}$ = '+f'{max_sq1imod_current:.3f} $\mu$A @ ' +
+                     '$I_{SQ1B,total} = $'+f'{bias_current[max_sq1imod_idx]:.1f} $\mu$A')
 
-    if(ic_params is not None):
-        sq1_safb_servo_biases_uA = ic_params2['bias']
-        sq1_safb_servo_mins_sa_in_uA = ic_params2['fb_min']
-        sq1_safb_servo_maxs_sa_in_uA = ic_params2['fb_max']
-        max_sq1imod_idx = ic_params2['bias_max_idx']
-        start_sq1imod_idx = ic_params2['bias_min_idx']
+    if(fig is None):
+        fig, ax = plt.subplots(figsize=figsize)
+    bias_current = ic_params_rson['bias']
+    fb_mins_current = ic_params_rson['fb_min']
+    fb_maxes_current = ic_params_rson['fb_max']
+    max_sq1imod_idx = ic_params_rson['bias_max_idx']
+    max_sq1imod_current = (fb_maxes_current[max_sq1imod_idx] -
+                           fb_mins_current[max_sq1imod_idx])
+    start_sq1imod_idx = ic_params_rson['bias_min_idx']
+
+    ax.plot(bias_current, fb_mins_current,
+            lw=2, label=sq1min_rson_label, color=sq1min_rson_color, alpha=alpha)
+    ax.plot(bias_current, fb_maxes_current,
+            lw=2, label=sq1max_rson_label, color=sq1max_rson_color, alpha=alpha)
+    ax.plot([bias_current[max_sq1imod_idx], bias_current[max_sq1imod_idx]],
+            [fb_mins_current[max_sq1imod_idx], fb_maxes_current[max_sq1imod_idx]],
+            lw=3, color=max_mod_color, alpha=alpha,
+            label=max_mod_label)
+
+    if(ic_params_rsoff is not None):
+        bias_current = ic_params_rsoff['bias']
+        fb_mins_current = ic_params_rsoff['fb_min']
+        fb_maxes_current = ic_params_rsoff['fb_max']
+        max_sq1imod_idx = ic_params_rsoff['bias_max_idx']
+        start_sq1imod_idx = ic_params_rsoff['bias_min_idx']
         start_sq1imod_uA = sq1_safb_servo_mins_sa_in_uA[max_sq1imod_idx]
         s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
                            lw=2, label='SQ1 min, rs off', color='aqua', alpha=alpha)
@@ -386,8 +490,8 @@ def plot_icminmax_col(last_fig, col, ic_params, ic_params2=None, ctime=None,
                            lw=3, color='purple', alpha=alpha,
                            )
         bias_limit = sq1_safb_servo_biases_uA[start_sq1imod_idx]
-        #s1b_minmax_ax.plot([bias_limit, bias_limit], [0,sq1_safb_servo_biases_uA[-1] ], alpha=alpha, color='orange')
-        #s1b_minmax_ax.plot([0, sq1_safb_servo_biases_uA[-1]], [start_sq1imod_uA, start_sq1imod_uA ], alpha=alpha, color='orange')
+        # s1b_minmax_ax.plot([bias_limit, bias_limit], [0,sq1_safb_servo_biases_uA[-1] ], alpha=alpha, color='orange')
+        # s1b_minmax_ax.plot([0, sq1_safb_servo_biases_uA[-1]], [start_sq1imod_uA, start_sq1imod_uA ], alpha=alpha, color='orange')
         if(ic_params2 is not None):
             sq1_safb_servo_biases_uA = ic_params2['bias']
             sq1_safb_servo_mins_sa_in_uA = ic_params2['fb_min']
@@ -444,7 +548,7 @@ def plot_rsservo_col(last_fig, col, chip_num, sq1_params, sq1_params2=None, ctim
         s1b_minmax_ax.set_xlabel(
             'SQ1 Total Bias Current (DAC units)', fontsize=18)
 
-        #s1b_minmax_ax.set_ylim(0, 40)
+        # s1b_minmax_ax.set_ylim(0, 40)
         s1b_minmax_fig.suptitle('RS Check Column ' + str(col))
         s1b_minmax_fig.tight_layout()
         savename = str(ctime) + '_rs_summary_col' + str(col) + '.png'
@@ -459,8 +563,8 @@ def plot_rsservo_col(last_fig, col, chip_num, sq1_params, sq1_params2=None, ctim
         s1b_minmax_ax.plot(
             sq1_safb_servo, sq1_safb_servo_curves_dac[0],  alpha=alpha, color=color, label='Chip Number: ' + str(chip_num))
 
-        #s1b_minmax_ax.plot([bias_limit, bias_limit], [0,sq1_safb_servo_biases_uA[-1] ], alpha=alpha, color='orange')
-        #s1b_minmax_ax.plot([0, sq1_safb_servo_biases_uA[-1]], [start_sq1imod_uA, start_sq1imod_uA ], alpha=alpha, color='orange')
+        # s1b_minmax_ax.plot([bias_limit, bias_limit], [0,sq1_safb_servo_biases_uA[-1] ], alpha=alpha, color='orange')
+        # s1b_minmax_ax.plot([0, sq1_safb_servo_biases_uA[-1]], [start_sq1imod_uA, start_sq1imod_uA ], alpha=alpha, color='orange')
         if(sq1_params2 is not None):
             (sq1_safb_servo_curves_dac, sq1_safb_servo_biases_dac,
              max_sq1_safb_servo_span_bias, max_sq1_safb_servo_span, sq1_safb_servo
