@@ -519,9 +519,53 @@ def plot_icminmax_col(last_fig, col, ic_params, ic_params2=None, ctime=None,
         return s1b_minmax_fig, s1b_minmax_ax
 
 
+def tile_plot(num_rows, num_columns, data, label, title, vmin=0, vmax=20,
+              savedir='../output_data', show_plot=False):
+    '''
+    Assumes data to be plotted is accessed by data[row][col]
+    '''
+    fig, ax = plt.subplots()
+    im = plt.imshow(data,
+                    interpolation='none', aspect='equal',
+                    vmin=vmin, vmax=vmax, cmap='bwr')
+
+    ax = plt.gca()
+
+    # Major ticks
+    spacing = 5
+    ax.set_xticks(np.arange(0, num_columns, spacing))
+    ax.set_yticks(np.arange(0, num_rows, spacing))
+
+    # Labels for major ticks
+    ax.set_xticklabels(np.arange(0, num_columns, spacing))
+    ax.set_yticklabels(np.arange(0, num_rows, spacing))
+
+    # Minor ticks
+    ax.set_xticks(np.arange(-.5, num_columns, 1), minor=True)
+    ax.set_yticks(np.arange(-.5, num_rows, 1), minor=True)
+
+    ax.set_xlabel('Column')
+    ax.set_ylabel('Row')
+    # Gridlines based on minor ticks
+    ax.grid(which='minor', color='w', linestyle='-', linewidth=2)
+
+    # Remove minor ticks
+    ax.tick_params(which='minor', bottom=False, left=False)
+    fig.suptitle(title)
+    cbar = fig.colorbar(im)
+    cbar.set_label(label)
+    savename = os.path.join(savedir, title + '.png')
+    print('saving: ' + savename)
+    plt.savefig(savename)
+    if(show_plot):
+        plt.show()
+    plt.close('all')
+
+
 def plot_rsservo_col(last_fig, col, chip_num, sq1_params, sq1_params2=None, ctime=None,
                      s1b_minmax_ax=None, s1b_minmax_fig=None, show_plot=False):
     '''
+    TODO: needs maintenance
     plots the rs servo at the given bias point. 
     '''
     colors = ['deepskyblue', 'red', 'green', 'purple']
@@ -586,46 +630,3 @@ def plot_rsservo_col(last_fig, col, chip_num, sq1_params, sq1_params2=None, ctim
         # plt.show()
 
     return s1b_minmax_fig, s1b_minmax_ax
-
-
-def tile_plot(num_rows, num_columns, data, label, title, vmin=0, vmax=20,
-              savedir='../output_data', show_plot=False):
-    '''
-    Assumes data to be plotted is accessed by data[row][col]
-    '''
-    fig, ax = plt.subplots()
-    im = plt.imshow(data,
-                    interpolation='none', aspect='equal',
-                    vmin=vmin, vmax=vmax, cmap='bwr')
-
-    ax = plt.gca()
-
-    # Major ticks
-    spacing = 5
-    ax.set_xticks(np.arange(0, num_columns, spacing))
-    ax.set_yticks(np.arange(0, num_rows, spacing))
-
-    # Labels for major ticks
-    ax.set_xticklabels(np.arange(0, num_columns, spacing))
-    ax.set_yticklabels(np.arange(0, num_rows, spacing))
-
-    # Minor ticks
-    ax.set_xticks(np.arange(-.5, num_columns, 1), minor=True)
-    ax.set_yticks(np.arange(-.5, num_rows, 1), minor=True)
-
-    ax.set_xlabel('Column')
-    ax.set_ylabel('Row')
-    # Gridlines based on minor ticks
-    ax.grid(which='minor', color='w', linestyle='-', linewidth=2)
-
-    # Remove minor ticks
-    ax.tick_params(which='minor', bottom=False, left=False)
-    fig.suptitle(title)
-    cbar = fig.colorbar(im)
-    cbar.set_label(label)
-    savename = os.path.join(savedir, title + '.png')
-    print('saving: ' + savename)
-    plt.savefig(savename)
-    if(show_plot):
-        plt.show()
-    plt.close('all')
