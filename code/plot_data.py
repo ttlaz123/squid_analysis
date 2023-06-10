@@ -5,6 +5,7 @@ Handles all the plotting done in Squid tuning analysis
 
 from matplotlib.ticker import AutoMinorLocator
 from collections import OrderedDict
+import time
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -363,16 +364,17 @@ def plot_icminmax(col, row, ic_params_rson, ic_params_rsoff=None,
     SQ1_TOTAL_BIAS_DAC_LABEL = 'SQ1 Total Bias Current (DAC)'
     TITLE = f'{ctime} Ic Check Column {col} Row {row}'
 
+    # TODO: figure out a better way to determine best scale
     if convert_units:
         UNAME = 'uA'
         YLABEL = SSA_INPUT_CURRENT_LABEL
         XLABEL = SQ1_TOTAL_BIAS_CURRENT_LABEL
-        YLIM = (0, 40)
+        YLIM = None  # (0, 40)
     else:
         UNAME = 'DAC'
         YLABEL = SSA_FB_LABEL
         XLABEL = SQ1_TOTAL_BIAS_DAC_LABEL
-        YLIM = (0, 10000)
+        YLIM = None  # (0, 10000)
 
     if fig is None:
         fig, ax = plt.subplots(figsize=FIGSIZE)
@@ -399,16 +401,16 @@ def plot_icminmax(col, row, ic_params_rson, ic_params_rsoff=None,
     for lh in leg.legendHandles:
         lh.set_alpha(1)
     ax.xaxis.set_minor_locator(AutoMinorLocator(5))
-    fig.tight_layout()
-
+    # significantly increases plot time to remove this
+    # fig.tight_layout()
     savename = f'{ctime}_icminmax_units{UNAME}_col{col}_row{row}.png'
     savename = os.path.join(savedir, savename)
-    print('saving to:', savename)
+    print('Saving to:', savename)
     fig.savefig(savename)
-
+    print("Done")
     if show_plot:
         plt.show()
-    ax.cla()
+    ax.clear()
     return fig, ax
 
 
@@ -491,16 +493,18 @@ def plot_icminmax_column(col, ic_params_rson_allrows, ic_params_rsoff_allrows=No
     TITLE = f'{ctime} Ic Check Column {col} Summary'
     if fig is None:
         fig, ax = plt.subplots(figsize=FIGSIZE)
+
+    # TODO: figure out a better way to determine best scale
     if convert_units:
         UNAME = 'uA'
         YLABEL = SSA_INPUT_CURRENT_LABEL
         XLABEL = SQ1_TOTAL_BIAS_CURRENT_LABEL
-        YLIM = (0, 40)
+        YLIM = None  # (0, 40)
     else:
         UNAME = 'DAC'
         YLABEL = SSA_FB_LABEL
         XLABEL = SQ1_TOTAL_BIAS_DAC_LABEL
-        YLIM = (0, 10000)
+        YLIM = None  # (0, 10000)
 
     for row in ic_params_rson_allrows:
         ic_params_rson = ic_params_rson_allrows[row]

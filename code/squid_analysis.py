@@ -91,6 +91,7 @@ def get_icmaxcolmod(ic_params_rson, ic_params_rsoff, manual_bias_idx=None):
 
 
 def initialize_grid_color_range():
+    # Will need adjustment based on the calibration of the particular system
     vmin_vmax_dict = {
         'DAC': {
             'vmin': {
@@ -100,42 +101,42 @@ def initialize_grid_color_range():
                 'Manually chosen Modulation': 0,
                 'Optimal Bias': 0,
                 'Crosstalk Bias Limit': 0,
-                'Optimal Bias - Crosstalk Bias Limit': 0,
-                'Ic,max - Ic,col': 0
+                'Optimal Bias - Crosstalk Bias Limit': -5000,
+                'Ic,max - Ic,col': -1000,
             },
             'vmax': {
-                'Ic,col': 100,
-                'Ic,max': 200,
-                'Optimal Modulation': 300,
-                'Manually chosen Modulation': 400,
-                'Optimal Bias': 500,
-                'Crosstalk Bias Limit': 600,
-                'Optimal Bias - Crosstalk Bias Limit': 700,
-                'Ic,max - Ic,col': 800
+                'Ic,col': 8000,
+                'Ic,max': 8000,
+                'Optimal Modulation': 2000,
+                'Manually chosen Modulation': 2000,
+                'Optimal Bias': 20000,
+                'Crosstalk Bias Limit': 20000,
+                'Optimal Bias - Crosstalk Bias Limit': 5000,
+                'Ic,max - Ic,col': 1000,
             }
         },
         'uA': {
             'vmin': {
-                'Ic,col': 0.1,
-                'Ic,max': 0.2,
-                'Optimal Modulation': 0.3,
-                'Manually chosen Modulation': 0.4,
-                'Optimal Bias': 0.5,
-                'Crosstalk Bias Limit': 0.6,
-                'Optimal Bias - Crosstalk Bias Limit': 0.7,
-                'Ic,max - Ic,col': 0.8
+                'Ic,col': 0,
+                'Ic,max': 0,
+                'Optimal Modulation': 0,
+                'Manually chosen Modulation': 0,
+                'Optimal Bias': 0,
+                'Crosstalk Bias Limit': 0,
+                'Optimal Bias - Crosstalk Bias Limit': -25,
+                'Ic,max - Ic,col': -5,
             },
             'vmax': {
-                'Ic,col': 10,
-                'Ic,max': 20,
-                'Optimal Modulation': 30,
-                'Manually chosen Modulation': 40,
-                'Optimal Bias': 50,
-                'Crosstalk Bias Limit': 60,
-                'Optimal Bias - Crosstalk Bias Limit': 70,
-                'Ic,max - Ic,col': 80
+                'Ic,col': 40,
+                'Ic,max': 40,
+                'Optimal Modulation': 10,
+                'Manually chosen Modulation': 10,
+                'Optimal Bias': 100,
+                'Crosstalk Bias Limit': 100,
+                'Optimal Bias - Crosstalk Bias Limit': 25,
+                'Ic,max - Ic,col': 5,
             }
-        }
+        },
     }
     return vmin_vmax_dict
 
@@ -275,8 +276,10 @@ def fill_all_ic_grids(all_grids, col, ic_params_rson_allrows,
 
     for row in ic_params_rson_allrows:
         ic_params_rson = ic_params_rson_allrows[row]
-        ic_params_rsoff = ic_params_rsoff_allrows[row]
-
+        if(ic_params_rsoff_allrows is not None):
+            ic_params_rsoff = ic_params_rsoff_allrows[row]
+        else:
+            ic_params_rsoff = None
         (ic_col, ic_min, ic_max, mod,
          optimal_bias, crosstalk_bias, manual_mod) = get_icmaxcolmod(
             ic_params_rson, ic_params_rsoff, manual_bias_idx=chosen_bias_idx)
@@ -375,7 +378,8 @@ def get_icparams_squid_column(col, sa_data, sa_runfile, cfg,
 
     rows = np.unique(sq1df_rson[rowname].tolist())
     ic_params_rson_allrows = {}
-    ic_params_rsoff_allrows = {}
+    if(sq1df_rsoff is None):
+        ic_params_rsoff_allrows = None
     for row in rows:
         sq1df_row = sq1df_col[sq1df_col[rowname] == row]
         if(sq1df_row.shape[0] < 5):
@@ -523,25 +527,30 @@ def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,
               sq1df_off=None,  sq1_runfile_off=None,
               cols=range(0, 16), flip_signs=False, manually_chosen_biases=None,
               plot_all_rows=False, savedir='test_output',
+              # For unit conversion
               convert_units=False, cfg=None, sa_data=None, sa_runfile=None,
+              # Debug options
               verbose=False, show_plot=False):
     # TODO: make script auto generate pager
 
     # Some Options that can be changed
-    bias_choose_method = 'bias_current'
+
+    # bias_current, device_current, or naive
+    bias_choose_method = 'naive'
     mod_thresh = 20
     max_rows = None
 
     # Setting up output directories
     col_summary_name = 'col_summary'
     all_rows_name = 'all_rows'
+    grid_name = 'gridplots'
     savedir_cols = os.path.join(savedir, col_summary_name)
     while not os.path.exists(savedir_cols):
         os.makedirs(savedir_cols)
     savedir_rows = os.path.join(savedir, all_rows_name)
     while not os.path.exists(savedir_rows):
         os.makedirs(savedir_rows)
-    savedir_grids = os.path.join(savedir, 'gridplots')
+    savedir_grids = os.path.join(savedir, grid_name)
     while not os.path.exists(savedir_grids):
         os.makedirs(savedir_grids)
 
@@ -586,8 +595,13 @@ def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,
                                       max_rows=max_rows, max_cols=max_cols)
         if(plot_all_rows):
             for row in ic_params_rson_allrows:
+                time1 = time.time()
                 ic_params_rson = ic_params_rson_allrows[row]
-                ic_params_rsoff = ic_params_rsoff_allrows[row]
+                if(ic_params_rsoff_allrows is not None):
+                    ic_params_rsoff = ic_params_rsoff_allrows[row]
+                else:
+                    ic_params_rsoff = None
+                print("reading: " + str(time1-time.time()))
                 fig, ax = pd.plot_icminmax(col, row, ic_params_rson,
                                            ic_params_rsoff=ic_params_rsoff,
                                            ctime=ctime, convert_units=convert_units,
@@ -595,7 +609,7 @@ def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,
                                            savedir=savedir_rows,
                                            fig=fig, ax=ax,
                                            show_plot=show_plot)
-
+                print("total: " + str(time1-time.time()))
         print('Plotting Summary for col ' + str(col))
         fig, ax = pd.plot_icminmax_column(col, ic_params_rson_allrows,
                                           ic_params_rsoff_allrows=ic_params_rsoff_allrows,
@@ -735,6 +749,7 @@ def main():
         rows = np.unique(all_rows)
         sq1df_off = None
         sq1_runfile_off = None
+        plot_all_rows = False
         if(args.ctime_off is not None):
             sq1df_off, sq1_runfile_off = rd.get_sq1_tune_data(
                 args.ctime_off, fast_csv_reading=fast_csv_reading)
@@ -743,7 +758,7 @@ def main():
 
         output_dir = './output_data/'
         print('Done reading files, time elapsed (s):' + str(time1-time0))
-        for convert_units in [True, False]:
+        for convert_units in [False, True, ]:
             if(args.chosen_biases is not None):
                 manual_optbias_filepath = args.chosen_biases
                 col_bias_dict = rd.read_optimal_bias_data(
@@ -759,17 +774,11 @@ def main():
             savedir = os.path.join(output_dir, ctime, branch)
             while not os.path.exists(savedir):
                 os.makedirs(savedir)
+
             ic_driver(sq1df, sq1_runfile, ctime=ctime,
                       sq1df_off=sq1df_off,  sq1_runfile_off=sq1_runfile_off,
                       manually_chosen_biases=manually_chosen_biases,
-                      savedir=savedir,  plot_all_rows=True, flip_signs=flip_signs,
-                      convert_units=convert_units,
-                      cfg=cfg, sa_data=sa_data, sa_runfile=sa_runfile,
-                      verbose=args.verbose)
-            ic_driver(sq1df, sq1_runfile, ctime=ctime,
-                      sq1df_off=sq1df_off,  sq1_runfile_off=sq1_runfile_off,
-                      manually_chosen_biases=manually_chosen_biases,
-                      savedir=savedir,  plot_all_rows=False, flip_signs=flip_signs,
+                      savedir=savedir,  plot_all_rows=plot_all_rows, flip_signs=flip_signs,
                       convert_units=convert_units, cfg=cfg, sa_data=sa_data, sa_runfile=sa_runfile,
                       verbose=args.verbose)
 
