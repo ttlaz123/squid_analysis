@@ -45,7 +45,8 @@ def get_sq1_tune_data(dir_path, bias_suffix=None, run_suffix=None, fast_csv_read
         bias_suffix = '_sq1servo_sa.bias'
     if(run_suffix is None):
         run_suffix = '_sq1servo_sa.run'
-    bias_df, mce_runfile = get_bias_run_data(dir_path, bias_suffix, run_suffix, fast_csv_reading=fast_csv_reading)
+    bias_df, mce_runfile = get_bias_run_data(
+        dir_path, bias_suffix, run_suffix, fast_csv_reading=fast_csv_reading)
     return bias_df, mce_runfile
 
 
@@ -70,15 +71,15 @@ def get_bias_run_data(dir_path, bias_suffix='_sq1servo_sa.bias', run_suffix='_sq
     if(fast_csv_reading):
         bias_df = pd.read_csv(bias_path,  sep='\s+',
                               index_col=False, engine='c')
-        
+
     else:
         try:
             bias_df = pd.read_csv(bias_path,  sep=separator,
-                                on_bad_lines='warn', index_col=False, skipinitialspace=True)
+                                  on_bad_lines='warn', index_col=False, skipinitialspace=True)
         except TypeError:
             print('Using old version of pandas:')
             bias_df = pd.read_csv(bias_path,  sep=separator,
-                                error_bad_lines=False, index_col=False, skipinitialspace=True)
+                                  error_bad_lines=False, index_col=False, skipinitialspace=True)
 
     print('Columns in .bias file: ' + str(bias_df.columns))
     assert len(
@@ -134,7 +135,7 @@ def write_optimal_bias_data(cols, biases, savename, savedir):
     col_name = 'column'
     bias_name = 'optimal_bias'
 
-    savepath = os.path.join(savedir, savename + 'col_biases.csv')
+    savepath = os.path.join(savedir, savename + '_col_biases.csv')
     d = {col_name: cols,
          bias_name: biases}
     df = pd.DataFrame(d)
@@ -148,7 +149,6 @@ def read_optimal_bias_data(data_path):
     '''
     col_name = 'column'
     bias_name = 'optimal_bias'
-
     df = pd.read_csv(data_path)
 
     biases = df[bias_name].to_list()
