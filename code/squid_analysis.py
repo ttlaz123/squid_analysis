@@ -1,6 +1,6 @@
 '''
 Written by Tom Liu, adapting code from David Goldfinger
-2023 June 1 last documentation update
+2023 June 9 last documentation update
 '''
 import os
 import argparse
@@ -24,8 +24,18 @@ class NoColumnException(Exception):
 
 def fill_grid_data(value, row, col, grid=None, max_rows=41, max_cols=32):
     '''
-    Fills in grid with a value at location [row, col]
-    If grid is None, initialize with grid of size [max_rows, max_cols]
+    Fills a grid with a value at a specific location.
+
+    Inputs:
+        value: The value to be filled in the grid.
+        row: The row index of the location.
+        col: The column index of the location.
+        grid: Optional. The grid to be filled. If not provided, a grid of size [max_rows, max_cols] will be initialized.
+        max_rows: The maximum number of rows in the grid. Defaults to 41.
+        max_cols: The maximum number of columns in the grid. Defaults to 32.
+
+    Returns:
+        grid: The updated grid with the value filled at the specified location.
     '''
     if(grid is None):
         grid = np.zeros((max_rows, max_cols))
@@ -80,7 +90,72 @@ def get_icmaxcolmod(ic_params_rson, ic_params_rsoff, manual_bias_idx=None):
     return ic_col, ic_min, ic_max, mod, optimal_bias, crosstalk_bias, manual_mod
 
 
+def initialize_grid_color_range():
+    vmin_vmax_dict = {
+        'DAC': {
+            'vmin': {
+                'Ic,col': 0,
+                'Ic,max': 0,
+                'Optimal Modulation': 0,
+                'Manually chosen Modulation': 0,
+                'Optimal Bias': 0,
+                'Crosstalk Bias Limit': 0,
+                'Optimal Bias - Crosstalk Bias Limit': 0,
+                'Ic,max - Ic,col': 0
+            },
+            'vmax': {
+                'Ic,col': 100,
+                'Ic,max': 200,
+                'Optimal Modulation': 300,
+                'Manually chosen Modulation': 400,
+                'Optimal Bias': 500,
+                'Crosstalk Bias Limit': 600,
+                'Optimal Bias - Crosstalk Bias Limit': 700,
+                'Ic,max - Ic,col': 800
+            }
+        },
+        'uA': {
+            'vmin': {
+                'Ic,col': 0.1,
+                'Ic,max': 0.2,
+                'Optimal Modulation': 0.3,
+                'Manually chosen Modulation': 0.4,
+                'Optimal Bias': 0.5,
+                'Crosstalk Bias Limit': 0.6,
+                'Optimal Bias - Crosstalk Bias Limit': 0.7,
+                'Ic,max - Ic,col': 0.8
+            },
+            'vmax': {
+                'Ic,col': 10,
+                'Ic,max': 20,
+                'Optimal Modulation': 30,
+                'Manually chosen Modulation': 40,
+                'Optimal Bias': 50,
+                'Crosstalk Bias Limit': 60,
+                'Optimal Bias - Crosstalk Bias Limit': 70,
+                'Ic,max - Ic,col': 80
+            }
+        }
+    }
+    return vmin_vmax_dict
+
+
 def make_grids(all_grids, rows, cols, ctime, show_plot, savedir, convert_units):
+    """
+    Plot grids based on the provided data.
+
+    Args:
+        all_grids (dict): Dictionary containing all grid data.
+        rows (list): List of row values.
+        cols (list): List of column values.
+        ctime: Current time.
+        show_plot (bool): Flag to indicate whether to show the plot.
+        savedir: Directory to save the plots.
+        convert_units (bool): Flag to indicate whether to convert units.
+
+    Returns:
+        None
+    """
     rows = range(max(rows))
     cols = range(max(cols))
     ic_max_grid = all_grids['ic_max']
@@ -92,77 +167,61 @@ def make_grids(all_grids, rows, cols, ctime, show_plot, savedir, convert_units):
     bias_crosstalk_diff_grid = all_grids['opt_cross_diff']
     chosen_mod_grid = all_grids['chosen']
 
-    if(convert_units):
+    vmin_vmax_dict = initialize_grid_color_range()
+    if convert_units:
         uname = 'uA'
-        vmin = 5
-        vmax = 15
+        vmin = vmin_vmax_dict['uA']['vmin']
+        vmax = vmin_vmax_dict['uA']['vmax']
     else:
         uname = 'DAC'
-        vmin = 2000
-        vmax = 6000
+        vmin = vmin_vmax_dict['DAC']['vmin']
+        vmax = vmin_vmax_dict['DAC']['vmax']
 
+    # TODO: there's probably a way to do this in a loop but too lazy to implement
     print('plotting grids...')
     pd.tile_plot(len(rows), len(cols), ic_col_grid,
                  'Ic,col ('+uname+')', str(ctime)+'_Ic_col'+'_units'+uname,
-                 show_plot=show_plot, savedir=savedir, vmin=vmin, vmax=vmax)
+                 show_plot=show_plot, savedir=savedir,
+                 vmin=vmin['Ic,col'], vmax=vmax['Ic,col'])
 
     pd.tile_plot(len(rows), len(cols), ic_max_grid,
                  'Ic,max ('+uname+')', str(ctime)+'_Ic_max'+'_units'+uname,
-                 show_plot=show_plot, savedir=savedir, vmin=vmin, vmax=vmax)
+                 show_plot=show_plot, savedir=savedir,
+                 vmin=vmin['Ic,max'], vmax=vmax['Ic,max'])
 
-    if(convert_units):
-        vmin = 0
-        vmax = 5
-    else:
-        vmin = 0
-        vmax = 2000
     pd.tile_plot(len(rows), len(cols), mod_grid,
                  'Optimal Modulation ('+uname+')', str(ctime) +
                  '_optmod'+'_units'+uname,
-                 show_plot=show_plot, savedir=savedir, vmin=vmin, vmax=vmax)
+                 show_plot=show_plot, savedir=savedir,
+                 vmin=vmin['Optimal Modulation'], vmax=vmax['Optimal Modulation'])
     pd.tile_plot(len(rows), len(cols), chosen_mod_grid,
-                 'Manullay chosen Modulation ('+uname+')', str(ctime) +
-                 '_manualmod'+'_units'+uname,
-                 show_plot=show_plot, savedir=savedir, vmin=vmin, vmax=vmax)
+                 'Chosen Modulation ('+uname+')', str(ctime) +
+                 '_chosenmod'+'_units'+uname,
+                 show_plot=show_plot, savedir=savedir,
+                 vmin=vmin['Manually chosen Modulation'], vmax=vmax['Manually chosen Modulation'])
 
-    if(convert_units):
-        vmin = 1000
-        vmax = 3000
-    else:
-        vmin = 5000
-        vmax = 15000
     pd.tile_plot(len(rows), len(cols), optimal_bias_grid,
                  'Optimal Bias ('+uname+')', str(ctime) +
                  '_optbias'+'_units'+uname,
-                 show_plot=show_plot, savedir=savedir, vmin=vmin, vmax=vmax)
+                 show_plot=show_plot, savedir=savedir,
+                 vmin=vmin['Optimal Bias'], vmax=vmax['Optimal Bias'])
     pd.tile_plot(len(rows), len(cols), crosstalk_bias_grid,
                  'Crosstalk Bias Limit ('+uname+')', str(ctime) +
                  '_crosstalk'+'_units'+uname,
-                 show_plot=show_plot, savedir=savedir, vmin=vmin, vmax=vmax)
-
-    if(convert_units):
-        vmin = -1000
-        vmax = 1000
-    else:
-        vmin = -5000
-        vmax = 5000
+                 show_plot=show_plot, savedir=savedir,
+                 vmin=vmin['Crosstalk Bias Limit'], vmax=vmax['Crosstalk Bias Limit'])
 
     pd.tile_plot(len(rows), len(cols), bias_crosstalk_diff_grid,
                  'Optimal Bias - Crosstalk Bias Limit ('+uname+')', str(
                      ctime)+'_optbias_crosstalk_diff'+'_units'+uname,
-                 show_plot=show_plot, savedir=savedir, vmin=vmin, vmax=vmax)
-
-    if(convert_units):
-        vmin = -5
-        vmax = 5
-    else:
-        vmin = -2000
-        vmax = 2000
+                 show_plot=show_plot, savedir=savedir,
+                 vmin=vmin['Optimal Bias - Crosstalk Bias Limit'], vmax=vmax['Optimal Bias - Crosstalk Bias Limit'])
 
     pd.tile_plot(len(rows), len(cols), ic_maxcol_diff_grid,
                  'Ic,max - Ic,col ('+uname+')', str(ctime) +
                  '_Ic_maxcol_diff'+'_units'+uname,
-                 show_plot=show_plot, savedir=savedir, vmin=vmin, vmax=vmax)
+                 show_plot=show_plot, savedir=savedir,
+                 vmin=vmin['Ic,max - Ic,col'], vmax=vmax['Ic,max - Ic,col'])
     return
 
 
@@ -190,7 +249,8 @@ def find_bias_idx(sq1_runfile, chosen_bias):
 
 
 def fill_all_ic_grids(all_grids, col, ic_params_rson_allrows,
-                      ic_params_rsoff_allrows, chosen_bias_idx):
+                      ic_params_rsoff_allrows, chosen_bias_idx,
+                      max_rows=41, max_cols=32):
     """
     Fills the IC grids with data based on the provided IC parameters and chosen bias.
 
@@ -221,21 +281,32 @@ def fill_all_ic_grids(all_grids, col, ic_params_rson_allrows,
          optimal_bias, crosstalk_bias, manual_mod) = get_icmaxcolmod(
             ic_params_rson, ic_params_rsoff, manual_bias_idx=chosen_bias_idx)
 
-        ic_col_grid = fill_grid_data(ic_col, row, col, grid=ic_col_grid)
-        ic_max_grid = fill_grid_data(ic_max, row, col, grid=ic_max_grid)
+        ic_col_grid = fill_grid_data(
+            ic_col, row, col, grid=ic_col_grid,
+            max_rows=max_rows, max_cols=max_cols)
+        ic_max_grid = fill_grid_data(
+            ic_max, row, col, grid=ic_max_grid,
+            max_rows=max_rows, max_cols=max_cols)
         ic_maxcol_diff_grid = fill_grid_data(
-            ic_max-ic_col, row, col, grid=ic_maxcol_diff_grid)
+            ic_max-ic_col, row, col, grid=ic_maxcol_diff_grid,
+            max_rows=max_rows, max_cols=max_cols)
 
-        mod_grid = fill_grid_data(mod, row, col, grid=mod_grid)
+        mod_grid = fill_grid_data(
+            mod, row, col, grid=mod_grid,
+            max_rows=max_rows, max_cols=max_cols)
         optimal_bias_grid = fill_grid_data(
-            optimal_bias, row, col, grid=optimal_bias_grid)
+            optimal_bias, row, col, grid=optimal_bias_grid,
+            max_rows=max_rows, max_cols=max_cols)
         crosstalk_bias_grid = fill_grid_data(
-            crosstalk_bias, row, col, grid=crosstalk_bias_grid)
+            crosstalk_bias, row, col, grid=crosstalk_bias_grid,
+            max_rows=max_rows, max_cols=max_cols)
         bias_crosstalk_diff_grid = fill_grid_data(
-            optimal_bias-crosstalk_bias, row, col, grid=bias_crosstalk_diff_grid)
+            optimal_bias-crosstalk_bias, row, col, grid=bias_crosstalk_diff_grid,
+            max_rows=max_rows, max_cols=max_cols)
 
         chosen_mod_grid = fill_grid_data(
-            manual_mod, row, col, grid=chosen_mod_grid)
+            manual_mod, row, col, grid=chosen_mod_grid,
+            max_rows=max_rows, max_cols=max_cols)
 
     all_grids['ic_max'] = ic_max_grid
     all_grids['ic_col'] = ic_col_grid
@@ -337,7 +408,31 @@ def get_icparams_squid_column(col, sa_data, sa_runfile, cfg,
 
 def choose_bias(ic_params_rson_allrows, ic_params_rsoff_allrows=None,
                 method='naive'):
+    '''
+    Determines the best bias current based on the given IC parameters.
 
+    Inputs:
+        ic_params_rson_allrows: A dictionary containing IC parameters with row select on.
+        ic_params_rsoff_allrows: Optional. A dictionary containing IC parameters with row select off.
+                                 Required for methods 'device_current' and 'bias_current'.
+        method: The method to choose the bias current. Options: 'naive', 'device_current', 'bias_current'.
+                Defaults to 'naive'.
+
+    Returns:
+        chosen_bias_idx: The index of the chosen bias current.
+        chosen_bias: The chosen bias current.
+
+    Raises:
+        ValueError: If the chosen method is not one of the available methods.
+
+    Note:
+        The IC parameters dictionaries should have the following keys:
+        - 'bias_max_idx': The index of the maximum modulation bias.
+        - 'bias_min_idx': The index of the minimum modulation bias.
+        - 'fb_max': A list of feedback currents for different biases.
+        - 'fb_min': A list of feedback currents for different biases.
+        - 'bias': A list of bias currents.
+    '''
     methods = ['naive', 'device_current', 'bias_current']
     if(method == methods[0]):
         best_bias_per_row = []
@@ -432,8 +527,10 @@ def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,
               verbose=False, show_plot=False):
     # TODO: make script auto generate pager
 
+    # Some Options that can be changed
     bias_choose_method = 'bias_current'
     mod_thresh = 20
+    max_rows = None
 
     # Setting up output directories
     col_summary_name = 'col_summary'
@@ -455,6 +552,7 @@ def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,
     optimal_col_biases = np.zeros(len(cols))
     count = 0
     rows = None
+    max_cols = max(cols)+1
     for col in cols:
         count += 1
         try:
@@ -471,6 +569,8 @@ def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,
             continue
 
         rows = ic_params_rson_allrows.keys()
+        if(max_rows is None):
+            max_rows = max(rows)+1
         if(manually_chosen_biases is None):
             chosen_bias_idx, chosen_bias = choose_bias(
                 ic_params_rson_allrows, ic_params_rsoff_allrows,
@@ -482,7 +582,8 @@ def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,
         optimal_col_biases[count-1] = chosen_bias
 
         all_grids = fill_all_ic_grids(all_grids, col, ic_params_rson_allrows,
-                                      ic_params_rsoff_allrows, chosen_bias_idx)
+                                      ic_params_rsoff_allrows, chosen_bias_idx,
+                                      max_rows=max_rows, max_cols=max_cols)
         if(plot_all_rows):
             for row in ic_params_rson_allrows:
                 ic_params_rson = ic_params_rson_allrows[row]

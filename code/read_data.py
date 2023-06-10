@@ -1,10 +1,9 @@
 '''
-Written by Tom Liu, Last Documentation update 2023 May 29
+Written by Tom Liu, Documentation last updated 2023 June 9
 
 Contains the Python functions that handle all the IO for 
 Squid tuning. 
-TODO: more comprehensive documention, but
-all the sample files are provided in the Github Repo
+All the sample files are provided in the Github Repo
 '''
 import glob
 import os
@@ -16,9 +15,16 @@ import mce_data
 
 def get_rsservo_data(dir_path, bias_suffix=None, run_suffix=None):
     '''
-    input: path/to/mce_folder
-            grabs the first file that is found with the given suffixes
-    output: retrieves rsservo data
+    Retrieves the RSSERVO data from the specified directory.
+
+    Inputs:
+        dir_path (str): Path to the directory containing the data files.
+        bias_suffix (str, optional): Suffix for the .bias file. Defaults to None.
+        run_suffix (str, optional): Suffix for the .run file. Defaults to None.
+
+    Returns:
+        bias_df (DataFrame): DataFrame containing the .bias data.
+        mce_runfile (MCERunfile object): MCERunfile object for the .run file.
     '''
     # The default parameters are written on separate lines in the function
     # rather than in the parameters inputs
@@ -33,9 +39,17 @@ def get_rsservo_data(dir_path, bias_suffix=None, run_suffix=None):
 
 def get_sq1_tune_data(dir_path, bias_suffix=None, run_suffix=None, fast_csv_reading=False):
     '''
-    input: path/to/mce_folder
-            grabs the first file that is found with the given suffixes
-    output: retrieves sq1 tuning data
+    Retrieves the SQ1 tuning data from the specified directory.
+
+    Inputs:
+        dir_path (str): Path to the directory containing the data files.
+        bias_suffix (str, optional): Suffix for the .bias file. Defaults to None.
+        run_suffix (str, optional): Suffix for the .run file. Defaults to None.
+        fast_csv_reading (bool, optional): Flag to enable fast CSV reading. Defaults to False.
+
+    Returns:
+        bias_df (DataFrame): DataFrame containing the .bias data.
+        mce_runfile (MCERunfile object): MCERunfile object for the .run file.
     '''
 
     # The default parameters are written on separate lines in the function
@@ -53,9 +67,17 @@ def get_sq1_tune_data(dir_path, bias_suffix=None, run_suffix=None, fast_csv_read
 def get_bias_run_data(dir_path, bias_suffix='_sq1servo_sa.bias', run_suffix='_sq1servo_sa.run',
                       fast_csv_reading=False):
     '''
-    input: path/to/mce_folder
-            grabs the first file that is found with the given suffixes
-    output: the requested .run and .bias data
+    Retrieves the requested .run and .bias data from the specified directory.
+
+    Inputs:
+        dir_path (str): Path to the directory containing the data files.
+        bias_suffix (str, optional): Suffix for the .bias file. Defaults to '_sq1servo_sa.bias'.
+        run_suffix (str, optional): Suffix for the .run file. Defaults to '_sq1servo_sa.run'.
+        fast_csv_reading (bool, optional): Flag to enable fast CSV reading. Defaults to False.
+
+    Returns:
+        bias_df (DataFrame): DataFrame containing the .bias data.
+        mce_runfile (MCERunfile object): MCERunfile object for the .run file.
     '''
     search_str = f'{dir_path}/*{bias_suffix}'
     # spaces or commas
@@ -99,7 +121,13 @@ def get_bias_run_data(dir_path, bias_suffix='_sq1servo_sa.bias', run_suffix='_sq
 
 def get_config_file(file_path='tune_cfg/slac_cd19.cfg'):
     '''
-    returns config file containing SSA, SQ1, and other parameters
+    Returns the configuration file containing SSA, SQ1, and other parameters.
+
+    Inputs:
+        file_path (str, optional): Path to the configuration file. Defaults to 'tune_cfg/slac_cd19.cfg'.
+
+    Returns:
+        cfg (ConfigParser object): Configuration file object.
     '''
     cfg = configparser.ConfigParser()
     print('Reading: ' + file_path)
@@ -109,7 +137,16 @@ def get_config_file(file_path='tune_cfg/slac_cd19.cfg'):
 
 def get_ssa_tune_data(dir_path, suffix='_ssa', run_ext='.run'):
     '''
-    Retrieves the relevant parameters from the SSA tuning data
+    Retrieves the relevant parameters from the SSA tuning data.
+
+    Inputs:
+        dir_path (str): Path to the directory containing the SSA tuning data files.
+        suffix (str, optional): Suffix used to identify the relevant files. Defaults to '_ssa'.
+        run_ext (str, optional): File extension for the run files. Defaults to '.run'.
+
+    Returns:
+        sa_data (object): SSA tuning data object.
+        sa_runfile (object): SSA tuning run file object.
     '''
     search_str = f'{dir_path}/*{suffix}'
     try:
@@ -129,7 +166,16 @@ def get_ssa_tune_data(dir_path, suffix='_ssa', run_ext='.run'):
 
 def write_optimal_bias_data(cols, biases, savename, savedir):
     '''
-    Writes a list of optimal biases for each column into a csv file
+    Writes a list of optimal biases for each column into a CSV file.
+
+    Inputs:
+        cols (list): List of column values.
+        biases (list): List of optimal bias values.
+        savename (str): Name of the file to be saved (without file extension).
+        savedir (str): Directory where the file should be saved.
+
+    Output:
+        None
     '''
     assert(len(cols) == len(biases))
     col_name = 'column'
@@ -144,8 +190,14 @@ def write_optimal_bias_data(cols, biases, savename, savedir):
 
 def read_optimal_bias_data(data_path):
     '''
-    Reads a csv file for the column and optimal biases
-    Returns dictionary from column to bias
+    Reads a CSV file for the column and optimal biases.
+    Returns a dictionary from column to bias.
+
+    Input:
+        data_path (str): Path to the CSV file.
+
+    Output:
+        col_bias_dict (dict): Dictionary mapping column (int) to optimal bias (float).
     '''
     col_name = 'column'
     bias_name = 'optimal_bias'

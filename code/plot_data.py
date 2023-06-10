@@ -1,5 +1,5 @@
 '''
-Written by Tom Liu, Documentation last updated 2023 May 31
+Written by Tom Liu, Documentation last updated 2023 June 9
 Handles all the plotting done in Squid tuning analysis
 '''
 
@@ -412,7 +412,20 @@ def plot_icminmax(col, row, ic_params_rson, ic_params_rsoff=None,
     return fig, ax
 
 
-def remove_redundant_labels(ax, loc='upper left', fontsize=8):
+def remove_redundant_labels(ax, loc='upper left', fontsize=8, alpha=1):
+    '''
+    Removes redundant labels from a plot legend.
+
+    Inputs:
+        ax (matplotlib.axes.Axes): Axes object containing the legend.
+        loc (str): Location of the legend. Defaults to 'upper left'.
+        fontsize (int): Font size of the legend labels. Defaults to 8.
+        alpha (float): Alpha value of the legend handles. Defaults to 1.
+
+    Returns:
+        leg (matplotlib.legend.Legend): Legend object.
+        ax (matplotlib.axes.Axes): Updated Axes object.
+    '''
     # Get the handles and labels from the plotted lines
     handles, labels = ax.get_legend_handles_labels()
 
@@ -428,7 +441,7 @@ def remove_redundant_labels(ax, loc='upper left', fontsize=8):
     leg = ax.legend(unique_handles, unique_labels,
                     loc='upper left', fontsize=8)
     for lh in leg.legendHandles:
-        lh.set_alpha(1)
+        lh.set_alpha(alpha)
     return leg, ax
 
 
@@ -436,8 +449,23 @@ def plot_icminmax_column(col, ic_params_rson_allrows, ic_params_rsoff_allrows=No
                          ctime=None, convert_units=False, chosen_bias_idx=None,
                          savedir='output_data', fig=None, ax=None, show_plot=False):
     '''
-    plots the ic col, ic min, and ic max given the ic_params. ic_params2 is assumed to be when row select is turned off
-    Returns the axes so they can be continually plotted over for the entire column
+    Plots the IC column, IC min, and IC max given the IC parameters.
+
+    Inputs:
+        col (int): Column number.
+        ic_params_rson_allrows (dict): Dictionary containing IC parameters with row select on for each row.
+        ic_params_rsoff_allrows (dict, optional): Dictionary containing IC parameters with row select off for each row. Defaults to None.
+        ctime (str): Time information for the plot title.
+        convert_units (bool): Flag indicating whether to convert units. Defaults to False.
+        chosen_bias_idx (int, optional): Index of the chosen bias point. Defaults to None.
+        savedir (str): Directory to save the plot. Defaults to 'output_data'.
+        fig (Figure object, optional): Existing Figure object to use for the plot. Defaults to None.
+        ax (Axes object, optional): Existing Axes object to use for the plot. Defaults to None.
+        show_plot (bool): Flag indicating whether to show the plot. Defaults to False.
+
+    Returns:
+        fig (Figure object): Figure object used for the plot.
+        ax (Axes object): Axes object used for the plot.
     '''
 
     ALPHA = 0.1
@@ -520,7 +548,18 @@ def plot_icminmax_column(col, ic_params_rson_allrows, ic_params_rsoff_allrows=No
 def tile_plot(num_rows, num_columns, data, label, title, vmin=0, vmax=20,
               savedir='../output_data', show_plot=False):
     '''
-    Assumes data to be plotted is accessed by data[row][col]
+    Creates a tiled plot of a 2D data array.
+
+    Inputs:
+        num_rows (int): Number of rows in the data array.
+        num_columns (int): Number of columns in the data array.
+        data (array-like): 2D data array to be plotted.
+        label (str): Label for the colorbar.
+        title (str): Title for the plot.
+        vmin (float): Minimum value for colorbar normalization. Defaults to 0.
+        vmax (float): Maximum value for colorbar normalization. Defaults to 20.
+        savedir (str): Directory to save the plot. Defaults to '../output_data'.
+        show_plot (bool): Flag indicating whether to show the plot. Defaults to False.
     '''
     fig, ax = plt.subplots()
     im = plt.imshow(data,
