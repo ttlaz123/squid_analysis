@@ -5,11 +5,11 @@ For working example, run
 
 ` python .\code\squid_analysis.py -i -t .\input_data\rowsel_on_small\ -u .\input_data\rowsel_off_small\`
 
-`-f` reads the `sq1.bias` files faster, but is more limited in what it can read (must be space separated and properly formatted.
-`-s` flips the sign of the SAFB data
-`-p` provides chosen bias points
-`-l` chooses the maximum number of columns to check
-`-h` for more detailed help info
+*`-f` reads the `sq1.bias` files faster, but is more limited in what it can read (must be space separated and properly formatted.
+*`-s` flips the sign of the SAFB data
+*`-p` provides chosen bias points
+*`-l` chooses the maximum number of columns to check
+*`-h` for more detailed help info
 
 See output plots in `output_data/`
 
