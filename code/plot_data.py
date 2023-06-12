@@ -317,7 +317,7 @@ def plot_iccurve(ic_params, ax, alpha=1,
 
 def plot_icminmax(col, row, ic_params_rson, ic_params_rsoff=None,
                   ctime=None, convert_units=False, chosen_bias_idx=None,
-                  savedir='output_data', fig=None, ax=None, show_plot=False):
+                  savedir='output_data', fig=None, ax=None, show_plot=False, verbose=False):
     '''
     The function generates a plot with customizable settings,
     including the ability to convert units,
@@ -405,9 +405,11 @@ def plot_icminmax(col, row, ic_params_rson, ic_params_rsoff=None,
     # fig.tight_layout()
     savename = f'{ctime}_icminmax_units{UNAME}_col{col}_row{row}.png'
     savename = os.path.join(savedir, savename)
-    print('Saving to:', savename)
+    if(verbose):
+        print('Saving to:', savename)
     fig.savefig(savename)
-    print("Done")
+    if(verbose):
+        print("Done")
     if show_plot:
         plt.show()
     ax.clear()
@@ -449,7 +451,7 @@ def remove_redundant_labels(ax, loc='upper left', fontsize=8, alpha=1):
 
 def plot_icminmax_column(col, ic_params_rson_allrows, ic_params_rsoff_allrows=None,
                          ctime=None, convert_units=False, chosen_bias_idx=None,
-                         savedir='output_data', fig=None, ax=None, show_plot=False):
+                         savedir='output_data', fig=None, ax=None, show_plot=False, verbose=False):
     '''
     Plots the IC column, IC min, and IC max given the IC parameters.
 
@@ -543,8 +545,8 @@ def plot_icminmax_column(col, ic_params_rson_allrows, ic_params_rsoff_allrows=No
     if show_plot:
         plt.show()
     ax.cla()
-
-    print("Figures open: " + str(plt.get_fignums()))
+    if(verbose):
+        print("Figures open: " + str(plt.get_fignums()))
     plt.close('all')
     return fig, ax
 

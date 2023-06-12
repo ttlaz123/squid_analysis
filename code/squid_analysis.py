@@ -548,7 +548,7 @@ def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,
 
     # bias_current, device_current, or naive
     bias_choose_method = 'naive'
-    mod_thresh = 20
+    mod_thresh = 30
     max_rows = None
 
     # Setting up output directories
@@ -619,7 +619,7 @@ def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,
                                            chosen_bias_idx=chosen_bias_idx,
                                            savedir=savedir_rows,
                                            fig=fig, ax=ax,
-                                           show_plot=show_plot)
+                                           show_plot=show_plot, verbose=verbose)
                 print("total: " + str(time1-time.time()))
         print('Plotting Summary for col ' + str(col))
         fig, ax = pd.plot_icminmax_column(col, ic_params_rson_allrows,
@@ -628,7 +628,7 @@ def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,
                                           chosen_bias_idx=chosen_bias_idx,
                                           savedir=savedir_cols,
                                           fig=fig, ax=ax,
-                                          show_plot=show_plot)
+                                          show_plot=show_plot, verbose=verbose)
 
     rd.write_optimal_bias_data(cols, optimal_col_biases,
                                ctime, savedir)
@@ -740,9 +740,11 @@ def main():
                         help='path/to/csv/file with chosen biases')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Whether to print out debug statements')
+    parser.add_argument('-l', '--columns', type=int, default=16,
+                        help='Number of columns to plot data for')
     args = parser.parse_args()
     flip_signs = args.flip_signs
-    numcols = 32
+    numcols = int(args.columns)
     cols = range(0, numcols)
     fast_csv_reading = args.fast_csv_reading
     print('Reading in files:' + str(args.ctime))
@@ -788,7 +790,7 @@ def main():
 
             ic_driver(sq1df, sq1_runfile, ctime=ctime,
                       sq1df_off=sq1df_off,  sq1_runfile_off=sq1_runfile_off,
-                      manually_chosen_biases=manually_chosen_biases,
+                      manually_chosen_biases=manually_chosen_biases, cols=cols,
                       savedir=savedir,  plot_all_rows=plot_all_rows, flip_signs=flip_signs,
                       convert_units=convert_units, cfg=cfg, sa_data=sa_data, sa_runfile=sa_runfile,
                       verbose=args.verbose)
