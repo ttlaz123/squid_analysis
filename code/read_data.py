@@ -8,6 +8,7 @@ All the sample files are provided in the Github Repo
 import glob
 import os
 import pandas as pd
+import csv
 import configparser
 
 import mce_data
@@ -79,6 +80,7 @@ def get_bias_run_data(dir_path, bias_suffix='_sq1servo_sa.bias', run_suffix='_sq
         bias_df (DataFrame): DataFrame containing the .bias data.
         mce_runfile (MCERunfile object): MCERunfile object for the .run file.
     '''
+    
     search_str = f'{dir_path}/*{bias_suffix}'
     # spaces or commas
     separator = r'\s*,\s*|\s+'
@@ -90,8 +92,18 @@ def get_bias_run_data(dir_path, bias_suffix='_sq1servo_sa.bias', run_suffix='_sq
 
     bias_path = os.path.join(bias_file)
     print('Reading: ' + bias_path)
+    min_column_num = 3
+    
     if(fast_csv_reading):
-        bias_df = pd.read_csv(bias_path,  sep='\s+',
+        fast_sep = ','
+        with open(bias_path, newline='') as f:
+            row1 = ''
+            while(row1 == ''):
+                row1 = f.readline().strip()
+            num_commas = row1.count(',')
+        if(num_commas <= min_column_num):
+            fast_sep = '\s+'
+        bias_df = pd.read_csv(bias_path,  sep=fast_sep,
                               index_col=False, engine='c')
 
     else:
@@ -105,7 +117,7 @@ def get_bias_run_data(dir_path, bias_suffix='_sq1servo_sa.bias', run_suffix='_sq
 
     print('Columns in .bias file: ' + str(bias_df.columns))
     assert len(
-        bias_df.columns) > 3, "Not enough columns in .bias file, data is improperly formatted"
+        bias_df.columns) > min_column_num, "Not enough columns in .bias file, data is improperly formatted"
     search_str = f'{dir_path}/*{run_suffix}'
     try:
         run_file = glob.glob(search_str)[0]
