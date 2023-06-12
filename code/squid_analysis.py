@@ -523,14 +523,7 @@ def setup_grids():
     all_grids['chosen'] = chosen_mod_grid
     return all_grids
 
-def auto_pager(rows, cols, ctime, convert_units=False, 
-               figs_dir=None, html_dir='webpage'):
-    '''
-    Writes a pager for viewing the plots
-    Requires the pager.css and pager.js files in the repo
-    TODO In progress
-    '''
-    return 
+
 
 
 
