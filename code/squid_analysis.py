@@ -378,6 +378,7 @@ def get_icparams_squid_column(col, sa_data, sa_runfile, cfg,
 
     rows = np.unique(sq1df_rson[rowname].tolist())
     ic_params_rson_allrows = {}
+    ic_params_rsoff_allrows = {}
     if(sq1df_rsoff is None):
         ic_params_rsoff_allrows = None
     for row in rows:
