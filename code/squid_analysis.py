@@ -392,7 +392,7 @@ def get_icparams_squid_column(col, sa_data, sa_runfile, cfg,
                                            col, mod_thresh=mod_thresh,
                                            convert_units=convert_units,
                                            cfg=cfg, ssa_params=ssa_params,
-                                           flip_signs=flip_signs)
+                                           flip_signs=flip_signs, verbose=verbose)
         ic_params_rson_allrows[row] = ic_params
         if(sq1df_rsoff is not None):
             sq1df_off_row = sq1df_off_col[sq1df_off_col[rowname] == row]
@@ -405,7 +405,7 @@ def get_icparams_squid_column(col, sa_data, sa_runfile, cfg,
                                                      col, mod_thresh=mod_thresh,
                                                      convert_units=convert_units,
                                                      cfg=cfg, ssa_params=ssa_params,
-                                                     flip_signs=flip_signs)
+                                                     flip_signs=flip_signs, verbose=verbose)
             ic_params_rsoff_allrows[row] = ic_params_rsoff
 
     return ic_params_rson_allrows, ic_params_rsoff_allrows
@@ -522,6 +522,15 @@ def setup_grids():
     all_grids['opt_cross_diff'] = bias_crosstalk_diff_grid
     all_grids['chosen'] = chosen_mod_grid
     return all_grids
+
+def auto_pager(rows, cols, ctime, convert_units=False, 
+               figs_dir=None, html_dir='webpage'):
+    '''
+    Writes a pager for viewing the plots
+    Requires the pager.css and pager.js files in the repo
+    '''
+
+
 
 
 def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,

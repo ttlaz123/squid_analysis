@@ -129,7 +129,8 @@ def get_rms_noise(df, bias_colname, fb_colname, zero_bias=0):
 
 def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
                         convert_units=False, cfg=None, ssa_params=None, flip_signs=False,
-                        filter_sq1=True, sq1_sgfilter_window_length=5, sq1_sgfilter_poly_deg=2):
+                        filter_sq1=True, sq1_sgfilter_window_length=5, sq1_sgfilter_poly_deg=2, 
+                        verbose=False):
     '''
     Calculates the important parameters for each row/col squid
     Input: 
@@ -160,7 +161,8 @@ def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
             "Not enough bias points in data for analysis: " + str(bias_dacs))
     icmin_thresh = mod_thresh * \
         get_rms_noise(sq1_rowcol_df, bias_colname, fb_colname)
-
+    if(verbose):
+        print("Ic min mod threshold: " + str(icmin_thresh))
     # Getting bias currents at min and max modulations
     # Min is min bias above the mod_thresh
     sq1_safb_curves = []
@@ -186,7 +188,9 @@ def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
 
         if(sq1_safb_span > icmin_thresh and b_index < min_sq1_safb_mod_bias_idx):
             min_sq1_safb_mod_bias_idx = b_index
-
+    if(verbose):
+        print("Ic min index: " + str(min_sq1_safb_mod_bias_idx))
+        print("Ic min (DAC): " + str(bias_dacs[min_sq1_safb_mod_bias_idx]))
     # np.max/np.min reversed because of SQUID coil polarity; must flip to get physical current
     sq1_safb_mins_dac = np.array([np.max(sq1_safb_curve_dac)
                                   for sq1_safb_curve_dac in sq1_safb_curves])
