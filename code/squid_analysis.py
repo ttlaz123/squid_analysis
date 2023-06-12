@@ -528,8 +528,9 @@ def auto_pager(rows, cols, ctime, convert_units=False,
     '''
     Writes a pager for viewing the plots
     Requires the pager.css and pager.js files in the repo
+    TODO In progress
     '''
-
+    return 
 
 
 
