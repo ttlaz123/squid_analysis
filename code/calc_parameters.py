@@ -1,7 +1,11 @@
+'''
+Written by Tom Liu, Documentation last updated 2023 June 9
+Handles all the IC parameter extractions in squid tuning analysis
+'''
 import numpy as np
 import scipy
 
-#import calculate_slopes as cs
+# import calculate_slopes as cs
 from estimate_phi0 import estimate_phi0
 from scipy.signal import savgol_filter
 
@@ -9,6 +13,13 @@ from scipy.signal import savgol_filter
 def get_fb_dac_to_in_ua(ssa_params, cfg):
     '''
     Converts from SAFB to SAIN to get the device current
+
+    Parameters:
+        ssa_params (tuple): Tuple containing the feedback DAC to microampere conversion factor and the feedback inductance in picohenry.
+        cfg (dict): Configuration dictionary containing relevant parameters.
+
+    Returns:
+        float: Conversion factor from feedback DAC units to device current in microamperes.
     '''
     sa_fb_dac_to_uA, M_ssa_fb_pH = ssa_params
     turns_ratio = M_ssa_fb_pH/float(cfg['SSA']['SSA_M_IN_PICOHENRY'])
@@ -19,6 +30,12 @@ def get_fb_dac_to_in_ua(ssa_params, cfg):
 def get_fb_dac_to_uA(cfg):
     '''
     Get conversion from DAC units to microamps for Feedback current
+
+    Parameters:
+        cfg (dict): Configuration dictionary containing relevant parameters.
+
+    Returns:
+        float: Conversion factor from feedback DAC units to microamperes.
     '''
     # the 1.e6 converts from A->uA
     sa_fb_dac_to_uA = 1.e6*(float(cfg['SSA']['SSA_FB_DAC_MAX_VOLTAGE_VOLTS'])/(
@@ -33,6 +50,12 @@ def get_fb_dac_to_uA(cfg):
 def get_bias_dac_to_uA(cfg):
     '''
     Get conversion from DAC units to microamps for Bias current
+
+    Parameters:
+        cfg (dict): Configuration dictionary containing relevant parameters.
+
+    Returns:
+        float: Conversion factor from bias DAC units to microamperes.
     '''
     # the 1.e6 converts from A->uA
     sa_bias_dac_to_uA = 1.e6*float(cfg['SSA']['SSA_BIAS_DAC_MAX_VOLTAGE_VOLTS'])/(
@@ -43,13 +66,38 @@ def get_bias_dac_to_uA(cfg):
     return sa_bias_dac_to_uA
 
 
+def get_ssa_bias_fb_range(sa_runfile):
+    '''
+    Extracts the range of SSA bias and feedback swept from an SA run file.
+
+    Input:
+        sa_runfile (object): SA run file object.
+
+    Output:
+        sa_bias (numpy.ndarray): Array indicating which SSAs were biased with nonzero bias.
+        sa_fb (numpy.ndarray): Range of SSA feedbacks swept.
+    '''
+    sa_bias = sa_runfile.Item('HEADER', f'RB sa bias', type='int')
+    # Which SSAs were biased with nonzero bias?
+    sa_biased_columns = np.nonzero(sa_bias)[0]
+    # What range of SSA feedback did we sweep?
+    sa_fb0, d_sa_fb, n_sa_fb = tuple([
+        int(i) for i in sa_runfile.Item('par_ramp', 'par_step loop1 par1')])
+    sa_fb = sa_fb0 + d_sa_fb*np.arange(n_sa_fb)
+
+    return sa_bias, sa_fb
+
+
 def get_bias_fb_range(runfile):
     '''
-    Input: 
-            runfile -- .run file with bias and feedback run parameters
+    Extracts the range of biases and feedbacks swept in DAC units from a .run file.
+
+    Input:
+        runfile (str): Path to the .run file with bias and feedback run parameters.
+
     Output:
-            bias_dacs -- range of biases sweeped in DAC units
-            fb_dacs -- range of fbs sweeped in DAC units
+        bias_dacs (numpy.ndarray): Range of biases swept in DAC units.
+        fb_dacs (numpy.ndarray): Range of feedbacks swept in DAC units.
     '''
     ramp_name = 'par_ramp'
     bias_loop = 'par_step loop1 par1'
@@ -144,7 +192,6 @@ def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
                                   for sq1_safb_curve_dac in sq1_safb_curves])
     sq1_safb_maxs_dac = np.array([np.min(sq1_safb_curve_dac)
                                   for sq1_safb_curve_dac in sq1_safb_curves])
-    
 
     # To convert to current, need to flip and zero starting value, then
     # scale to SSA in current units
@@ -155,7 +202,7 @@ def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
 
     if(convert_units):
         sq1_bias_dac_to_uA = get_bias_dac_to_uA(cfg)
-        sa_fb_dac_to_sa_in_uA = get_fb_dac_to_in_ua(cfg, ssa_params)
+        sa_fb_dac_to_sa_in_uA = get_fb_dac_to_in_ua(ssa_params, cfg)
         sq1_biases = np.array(sq1_biases)*sq1_bias_dac_to_uA
         sq1_safb_servo_mins = np.array(
             sq1_safb_servo_mins)*sa_fb_dac_to_sa_in_uA
@@ -177,29 +224,41 @@ def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
 
     return ic_params
 
-def get_ssa_bias_fb_range(sa_runfile):
-    sa_bias = sa_runfile.Item('HEADER', f'RB sa bias', type='int')
-    # Which SSAs were biased with nonzero bias?
-    sa_biased_columns = np.nonzero(sa_bias)[0]
-    # What range of SSA feedback did we sweep?
-    sa_fb0, d_sa_fb, n_sa_fb = tuple([
-        int(i) for i in sa_runfile.Item('par_ramp', 'par_step loop1 par1')])
-    sa_fb = sa_fb0 + d_sa_fb*np.arange(n_sa_fb)
-    
-    return sa_bias, sa_fb
 
 def get_sample_num(sa_runfile, col):
-    rc = int(col/8)+1
+    '''
+    Retrieves the sample number for a given column in an SA run file.
+
+    Input:
+        sa_runfile (object): SA run file object.
+        col (int): Column number.
+
+    Output:
+        sample_num (int): Sample number for the specified column.
+    '''
+    cols_per_rc = 8
+    rc = int(col/cols_per_rc)+1
     sample_num = sa_runfile.Item(
         'HEADER', f'RB rc{rc} sample_num', type='int')[0]
     return sample_num
 
+
 def calculate_ssa_parameters(sa_data, sa_runfile, cfg, col):
     '''
-    Takes in the ssa data to plot all the parameters for each ssa column 
-    Adapted from David Goldfinger's script
+    Takes in the SSA data to plot all the parameters for each SSA column.
+    Used for converting to physical units.
+    Adapted from David Goldfinger's script.
+
+    Input:
+        sa_data (object): SSA data object.
+        sa_runfile (object): SA run file object.
+        cfg (object): Configuration file object.
+        col (int): Column number.
+
+    Output:
+        ssa_params (tuple): Tuple containing the SSA parameters (sa_fb_dac_to_uA, M_ssa_fb_pH).
     '''
-    
+
     # Convert to physical current using configuration file info
     sa_bias, sa_fb = get_ssa_bias_fb_range(sa_runfile)
     sa_fb_dac_to_uA = get_fb_dac_to_uA(cfg)
@@ -211,7 +270,7 @@ def calculate_ssa_parameters(sa_data, sa_runfile, cfg, col):
                                for row in range(nrow)], axis=0)
 
     sample_num = get_sample_num(sa_runfile, col)
-    
+
     sa_adu = sa_coadd_adu/sample_num
     # Convert sa_fb and sa_adu to physical units.
     sa_bias_dac = sa_bias[col]
@@ -221,7 +280,7 @@ def calculate_ssa_parameters(sa_data, sa_runfile, cfg, col):
     try:
         sa_phi0_est = estimate_phi0(sa_fb, sa_adu, debug=False)
     except ValueError:
-        #pd.plot_ssa_debug(sa_fb, sa_adu)
+        # pd.plot_ssa_debug(sa_fb, sa_adu)
         return
     M_ssa_fb_pH = 1.e12 * \
         scipy.constants.value(u'mag. flux quantum')/(sa_phi0_est*1.e-6)
@@ -231,58 +290,3 @@ def calculate_ssa_parameters(sa_data, sa_runfile, cfg, col):
     # DONE PLOTTING SSA
     ssa_params = sa_fb_dac_to_uA, M_ssa_fb_pH
     return ssa_params
-#################
-# Everything below this is
-# DEPRECATED
-####################
-
-
-def calculate_sq1_parameters(sq1df, sq1_runfile, cfg, col, row, ssa_params,
-                             filter_sq1=True, sq1_sgfilter_window_length=5, calc_slopes=False,
-                             sq1_sgfilter_poly_deg=2, s1_slope_npts_to_fit=6):
-    '''
-    Takes in the sq1 data to plot all the parameters for each sq1 row 
-    Adapted from David Goldfinger's script
-    '''
-    sa_fb_dac_to_uA, M_ssa_fb_pH = ssa_params
-    sq1_b0, d_sq1_b, n_sq1_b = tuple([
-        int(i) for i in sq1_runfile.Item('par_ramp', 'par_step loop1 par1')])
-    sq1_b = sq1_b0 + d_sq1_b*np.arange(n_sq1_b)
-    # What range of SQ1 feedbacks did we sweep?
-    sq1_fb0, d_sq1_fb, n_sq1_fb = tuple([
-        int(i) for i in sq1_runfile.Item('par_ramp', 'par_step loop2 par1')])
-    sq1_fb = sq1_fb0 + d_sq1_fb*np.arange(n_sq1_fb)
-
-    # Find bias corresponding to max SQ1 response
-    max_sq1_safb_servo_span = 0
-    max_sq1_safb_servo_span_bias = None
-    sq1_safb_servo_curves_dac = []
-    sq1_safb_servo_biases_dac = []
-    sq1df_row = sq1df[(sq1df['<row>'] == row)]
-
-    if(sq1df_row.shape[0] < 5):
-        raise ValueError("Not enough data for row " +
-                         str(row), '. Skipping row.')
-    for b_index, grp in sq1df_row.groupby('<bias>'):
-        b = sq1_b[b_index]
-        sq1_safb_servo = grp[f'<safb{col:02}>'].values
-        sq1_safb_servo_curves_dac.append(sq1_safb_servo)
-        sq1_safb_servo_biases_dac.append(b)
-        sq1_safb_servo_span = np.max(sq1_safb_servo)-np.min(sq1_safb_servo)
-        if sq1_safb_servo_span > max_sq1_safb_servo_span:
-            max_sq1_safb_servo_span = sq1_safb_servo_span
-            max_sq1_safb_servo_span_bias = b
-    # print(
-    #    f'max_sq1_safb_servo_span_bias={max_sq1_safb_servo_span_bias}\tmax_sq1_safb_servo_span={max_sq1_safb_servo_span}')
-
-    # if(calc_slopes):
-    #    print("Calculating Slopes")
-    #    cs.calculate_sq1_slopes(cfg, sq1df, sq1_fb, sq1_b, max_sq1_safb_servo_span_bias, row, col,
-    #                         sa_fb_dac_to_uA, s1_slope_npts_to_fit, M_ssa_fb_pH,
-    #                         filter_sq1, sq1_sgfilter_window_length=sq1_sgfilter_window_length, sq1_sgfilter_poly_deg=sq1_sgfilter_poly_deg)
-
-    sq1_params = (sq1_safb_servo_curves_dac, sq1_safb_servo_biases_dac,
-                  max_sq1_safb_servo_span_bias, max_sq1_safb_servo_span, sq1_fb
-                  )
-
-    return sq1_params
