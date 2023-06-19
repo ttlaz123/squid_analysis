@@ -156,7 +156,7 @@ def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
     fb_colname = f'<safb{col:02}>'
 
     bias_dacs, fb_dacs = get_bias_fb_range(sq1_runfile)
-    if(len(bias_dacs) < 5):
+    if(len(bias_dacs) < sq1_sgfilter_window_length):
         raise ValueError(
             "Not enough bias points in data for analysis: " + str(bias_dacs))
     icmin_thresh = mod_thresh * \
@@ -220,6 +220,7 @@ def calculate_ic_params(sq1_rowcol_df, sq1_runfile, col, mod_thresh=20,
             sq1_safb_servo_maxs, sq1_sgfilter_window_length, sq1_sgfilter_poly_deg)
 
     ic_params = {'bias': sq1_biases,
+                 'safb': sq1_safb_curves,
                  'fb_min': sq1_safb_servo_mins,
                  'fb_max': sq1_safb_servo_maxs,
                  'bias_max_idx': max_sq1_safb_mod_bias_idx,

@@ -637,23 +637,28 @@ def rs_driver(cfg, sa_data, sa_runfile, rsdf, rs_runfile, ctime=None,
     TODO: Needs maintenance
     """
     chip_starts = [0, 10, 20, 30, 41]
-    sq1_sgfilter_window_length = 5
+    sq1_sgfilter_window_length = 1
     sq1_sgfilter_poly_deg = 2
     calc_slopes = False
     show_plot = False
-
+    bname = '<bias>'
+    fluxname = '<flux>'
+    rowname = '<row>'
+    
     for col in cols:
-
-        print("Analyzing Column: " + str(col))
+        colname = '<safb' + str(str(col).zfill(2)) + '>'
+        sq1df_col = rsdf.filter([bname, fluxname, rowname, colname], axis=1)
+        
         try:
+            print("Analyzing Column: " + str(col))
             ssa_params = cp.calculate_ssa_parameters(
-                sa_data, sa_runfile, cfg, col, show_plot=show_plot)
+                sa_data, sa_runfile, cfg, col)
         except TypeError:
             print('Skipping Column: ' + str(col))
             continue
         if(ssa_params is None):
-            print('Skipping Column: ' + str(col))
-            continue
+            print('No SSA params for Column: ' + str(col))
+            
         s1b_minmax_fig = None
         s1b_minmax_ax = None
 
@@ -671,18 +676,15 @@ def rs_driver(cfg, sa_data, sa_runfile, rsdf, rs_runfile, ctime=None,
                 raise ValueError(
                     "Row does not correspond to chip: " + str(row))
             last_fig = (row == rows[-1])
-
-            sq1_params = cp.calculate_sq1_parameters(rsdf, rs_runfile, cfg, col, row,
-                                                     ssa_params, filter_sq1=filter_sq1, calc_slopes=calc_slopes,
-                                                     sq1_sgfilter_window_length=sq1_sgfilter_window_length,
-                                                     sq1_sgfilter_poly_deg=sq1_sgfilter_poly_deg)
+            sq1df_row = sq1df_col[sq1df_col[rowname] == row]
+            ic_params = cp.calculate_ic_params(sq1df_row, rs_runfile,col, filter_sq1=filter_sq1, sq1_sgfilter_window_length=sq1_sgfilter_window_length)
 
             # ic_params=calculate_icminmax(cfg, filter_sq1, row, col,  sq1_params, ssa_params,
             #                             sq1_sgfilter_window_length, sq1_sgfilter_poly_deg)
             sq1_params2 = None
             if(rsdf_off is not None):
-                sq1_params2 = cp.calculate_sq1_parameters(rsdf_off, rs_runfile_off, cfg, col, row,
-                                                          ssa_params, filter_sq1=filter_sq1)
+                sq1_params2 = cp.calculate_ic_params(rsdf_off, rs_runfile_off, cfg, col, row,
+                                                          ssa_params, filter_sq1=filter_sq1, sq1_sgfilter_window_length=sq1_sgfilter_window_length)
 
                 # ic_params2=calculate_icminmax(cfg, filter_sq1, row, col,  sq1_params2, ssa_params,
                 #                              sq1_sgfilter_window_length, sq1_sgfilter_poly_deg)
@@ -690,7 +692,7 @@ def rs_driver(cfg, sa_data, sa_runfile, rsdf, rs_runfile, ctime=None,
             #    ic_params2 = None
             # pd.plot_icminmax(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA, sq1_safb_servo_maxs_sa_in_uA,
              #     max_sq1imod_idx, max_sq1imod_uA)#, tune_ctime, col, row)
-            s1b_minmax_fig, s1b_minmax_ax = pd.plot_rsservo_col(last_fig, col, chip_num, sq1_params,
+            s1b_minmax_fig, s1b_minmax_ax = pd.plot_rsservo_col(last_fig, col, chip_num, ic_params,
                                                                 sq1_params2=sq1_params2, ctime=ctime,
                                                                 s1b_minmax_ax=s1b_minmax_ax,
                                                                 s1b_minmax_fig=s1b_minmax_fig)
@@ -805,7 +807,7 @@ def main():
         ctime = ctime+'_rsservo'
         rs_driver(cfg, sa_data, sa_runfile, rsservo_df, rsservo_runfile,
                   rsdf_off=rsservo_df_off,  rs_runfile_off=rsservo_runfile_off,
-                  filter_sq1=True, ctime=ctime,
+                  filter_sq1=False, ctime=ctime,
                   cols=cols, rows=rows)
 
 

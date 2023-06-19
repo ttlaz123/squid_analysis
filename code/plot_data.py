@@ -281,9 +281,9 @@ def plot_iccurve(ic_params, ax, alpha=1,
     start_sq1imod_idx = ic_params['bias_min_idx']
 
     ax.plot(bias_current, fb_mins_current, lw=2,
-            label=min_label, color=min_color, alpha=alpha)
+            label=min_label, color=min_color, alpha=alpha)#, marker='o')
     ax.plot(bias_current, fb_maxes_current, lw=2,
-            label=max_label, color=max_color, alpha=alpha)
+            label=max_label, color=max_color, alpha=alpha)#, marker='x')
 
     if(mod_label is not None):
         xs = [bias_current[max_sq1imod_idx], bias_current[max_sq1imod_idx]]
@@ -613,11 +613,13 @@ def plot_rsservo_col(last_fig, col, chip_num, sq1_params, sq1_params2=None, ctim
     '''
     colors = ['deepskyblue', 'red', 'green', 'purple']
     color = colors[chip_num]
-    savedir = '../output_data/'
-    alpha = 0.2
-    (sq1_safb_servo_curves_dac, sq1_safb_servo_biases_dac,
-     max_sq1_safb_servo_span_bias, max_sq1_safb_servo_span, sq1_safb_servo
-     ) = sq1_params
+    savedir = os.path.join('output_data', str(ctime))
+    while not os.path.exists(savedir):
+        os.makedirs(savedir)
+    alpha = 0.1
+    
+    sq1_safb_servo_curves_dac = sq1_params['safb'][-1]
+    sq1_safb_servo = range(len(sq1_safb_servo_curves_dac))
     # print(sq1_safb_servo_curves_dac)
     # print(sq1_safb_servo)
     if(s1b_minmax_ax is None):
@@ -627,15 +629,13 @@ def plot_rsservo_col(last_fig, col, chip_num, sq1_params, sq1_params2=None, ctim
         # s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
         #        lw=2, label='SQ1 min(Imod)', color='blue', alpha=alpha)
         s1b_minmax_ax.plot(
-            sq1_safb_servo, sq1_safb_servo_curves_dac[0], alpha=alpha, color=color, label='Chip Number: ' + str(chip_num))
+            sq1_safb_servo, sq1_safb_servo_curves_dac, alpha=alpha, color=color, label='Chip Number: ' + str(chip_num))
         if(sq1_params2 is not None):
-            (sq1_safb_servo_curves_dac, sq1_safb_servo_biases_dac,
-             max_sq1_safb_servo_span_bias, max_sq1_safb_servo_span, sq1_safb_servo
-             ) = sq1_params2
+            sq1_safb_servo_curves_dac = sq1_params2['safb']
             # s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
             #    lw=2, label='Ic,col', color='aqua', alpha=alpha)
             s1b_minmax_ax.plot(
-                sq1_safb_servo, sq1_safb_servo_curves_dac[0], alpha=alpha, color='aqua')
+                sq1_safb_servo, sq1_safb_servo_curves_dac, alpha=alpha, color='aqua')
         handles, labels = plt.gca().get_legend_handles_labels()
         by_label = OrderedDict(zip(labels, handles))
         leg = s1b_minmax_ax.legend(
@@ -643,9 +643,9 @@ def plot_rsservo_col(last_fig, col, chip_num, sq1_params, sq1_params2=None, ctim
 
         for lh in leg.legendHandles:
             lh.set_alpha(1)
-        s1b_minmax_ax.set_ylabel('SSA Input Current (DAC units)', fontsize=18)
+        s1b_minmax_ax.set_ylabel('SAFB Current (DAC units)', fontsize=18)
         s1b_minmax_ax.set_xlabel(
-            'SQ1 Total Bias Current (DAC units)', fontsize=18)
+            'FB Current (DAC units)', fontsize=18)
 
         # s1b_minmax_ax.set_ylim(0, 40)
         s1b_minmax_fig.suptitle('RS Check Column ' + str(col))
@@ -660,16 +660,14 @@ def plot_rsservo_col(last_fig, col, chip_num, sq1_params, sq1_params2=None, ctim
     else:
 
         s1b_minmax_ax.plot(
-            sq1_safb_servo, sq1_safb_servo_curves_dac[0],  alpha=alpha, color=color, label='Chip Number: ' + str(chip_num))
+            sq1_safb_servo, sq1_safb_servo_curves_dac,  alpha=alpha, color=color, label='Chip Number: ' + str(chip_num))
 
         # s1b_minmax_ax.plot([bias_limit, bias_limit], [0,sq1_safb_servo_biases_uA[-1] ], alpha=alpha, color='orange')
         # s1b_minmax_ax.plot([0, sq1_safb_servo_biases_uA[-1]], [start_sq1imod_uA, start_sq1imod_uA ], alpha=alpha, color='orange')
         if(sq1_params2 is not None):
-            (sq1_safb_servo_curves_dac, sq1_safb_servo_biases_dac,
-             max_sq1_safb_servo_span_bias, max_sq1_safb_servo_span, sq1_safb_servo
-             ) = sq1_params2
+            sq1_safb_servo_curves_dac = sq1_params2['safb']
             s1b_minmax_ax.plot(
-                sq1_safb_servo, sq1_safb_servo_curves_dac[0], alpha=alpha, color='aqua')
+                sq1_safb_servo, sq1_safb_servo_curves_dac, alpha=alpha, color='aqua')
         # plt.show()
 
     return s1b_minmax_fig, s1b_minmax_ax

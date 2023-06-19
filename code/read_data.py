@@ -31,9 +31,9 @@ def get_rsservo_data(dir_path, bias_suffix=None, run_suffix=None):
     # rather than in the parameters inputs
     # for easier readability
     if(bias_suffix is None):
-        bias_suffix = '_rsservo_sa.bias'
+        bias_suffix = '_rsservo*.bias'
     if(run_suffix is None):
-        run_suffix = '_rsservo_sa.run'
+        run_suffix = '_rsservo*.run'
     bias_df, mce_runfile = get_bias_run_data(dir_path, bias_suffix, run_suffix)
     return bias_df, mce_runfile
 
