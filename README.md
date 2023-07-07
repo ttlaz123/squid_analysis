@@ -2,7 +2,7 @@
 Go to folder you want to save the code, then type
 `git clone -b tuning_clean --single-branch https://github.com/ttlaz123/squid_analysis/`
 # squid_analysis
-NOTE: Python 3 required
+NOTE: Python 3.6+ required
 For working example, run 
 
 `cd squid_analysis`
