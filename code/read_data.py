@@ -81,7 +81,7 @@ def get_bias_run_data(dir_path, bias_suffix='_sq1servo_sa.bias', run_suffix='_sq
         mce_runfile (MCERunfile object): MCERunfile object for the .run file.
     '''
     
-    search_str = f'{dir_path}/*{bias_suffix}'
+    search_str = dir_path+'/*'+bias_suffix
     # spaces or commas
     separator = r'\s*,\s*|\s+'
     try:
@@ -118,7 +118,7 @@ def get_bias_run_data(dir_path, bias_suffix='_sq1servo_sa.bias', run_suffix='_sq
     print('Columns in .bias file: ' + str(bias_df.columns))
     assert len(
         bias_df.columns) > min_column_num, "Not enough columns in .bias file, data is improperly formatted"
-    search_str = f'{dir_path}/*{run_suffix}'
+    search_str = dir_path+'/*'+run_suffix
     try:
         run_file = glob.glob(search_str)[0]
     except IndexError as e:
@@ -160,7 +160,7 @@ def get_ssa_tune_data(dir_path, suffix='_ssa', run_ext='.run'):
         sa_data (object): SSA tuning data object.
         sa_runfile (object): SSA tuning run file object.
     '''
-    search_str = f'{dir_path}/*{suffix}'
+    search_str = dir_path+'/*'+suffix
     try:
         sa_tune = glob.glob(search_str)[0]
     except IndexError as e:
