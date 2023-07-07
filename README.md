@@ -2,11 +2,13 @@
 Go to folder you want to save the code, then type
 `git clone -b tuning_clean --single-branch https://github.com/ttlaz123/squid_analysis/`
 # squid_analysis
+NOTE: Python 3 required
 For working example, run 
 
 `cd squid_analysis`
 
 ` python .\code\squid_analysis.py -i -t .\input_data\rowsel_on_small\ -u .\input_data\rowsel_off_small\`
+` python ./code/squid_analysis.py -i -t ./input_data/rowsel_on_small/ -u ./input_data/rowsel_off_small/`
 
 * `-f` reads the `sq1.bias` files faster, but is more limited in what it can read (must be space separated and properly formatted.
 * `-s` flips the sign of the SAFB data
