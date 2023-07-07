@@ -1,3 +1,6 @@
+# Installation:
+Go to folder you want to save the code, then type
+`git clone https://github.com/ttlaz123/squid_analysis/edit/tuning_clean/`
 # squid_analysis
 For working example, run 
 
