@@ -1,18 +1,25 @@
 '''
 Written by Tom Liu, adapting code from David Goldfinger
-2023 June 9 last documentation update
+2023 July 26 last documentation update
 '''
 import os
+import sys
+
+if sys.version_info.major != 3:
+    sys.exit("This software is only supported on Python 3")
+if sys.version_info.minor < 6:
+    sys.exit("This software is expecting Python 3.6+.")
+print(f"Running Python version {sys.version_info.major}.{sys.version_info.minor}")
+
 import argparse
 import time
-
 import numpy as np
-
 
 import read_data as rd
 import plot_data as pd
 import calc_parameters as cp
 import calculate_slopes as cs
+
 # we should figure out where these warnings are coming from some day
 import warnings
 warnings.filterwarnings("ignore")
