@@ -645,7 +645,7 @@ def plot_rsservo_col(last_fig, col, chip_num, sq1_params, sq1_params2=None, ctim
             lh.set_alpha(1)
         s1b_minmax_ax.set_ylabel('SAFB Current (DAC units)', fontsize=18)
         s1b_minmax_ax.set_xlabel(
-            'FB Current (DAC units)', fontsize=18)
+            'RS Current (DAC units)', fontsize=18)
 
         # s1b_minmax_ax.set_ylim(0, 40)
         s1b_minmax_fig.suptitle('RS Check Column ' + str(col))

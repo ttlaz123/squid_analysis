@@ -524,27 +524,23 @@ def setup_grids():
     return all_grids
 
 
+def setup_directories(savedir):
+    """
+    Creates and sets up output directories for saving different types of files.
 
+    Parameters:
+        savedir (str): The base directory where subdirectories will be created.
 
+    Returns:
+        tuple: A tuple containing three directory paths corresponding to the created subdirectories:
+            - savedir_cols (str): Directory path for 'col_summary' subdirectory.
+            - savedir_rows (str): Directory path for 'all_rows' subdirectory.
+            - savedir_grids (str): Directory path for 'gridplots' subdirectory.
 
-def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,
-              sq1df_off=None,  sq1_runfile_off=None,
-              cols=range(0, 16), flip_signs=False, manually_chosen_biases=None,
-              plot_all_rows=False, savedir='test_output',
-              # For unit conversion
-              convert_units=False, cfg=None, sa_data=None, sa_runfile=None,
-              # Debug options
-              verbose=False, show_plot=False):
-    # TODO: make script auto generate pager
-
-    # Some Options that can be changed
-
-    # bias_current, device_current, or naive
-    bias_choose_method = 'naive'
-    mod_thresh = 30
-    max_rows = None
-
-    # Setting up output directories
+    Note:
+        This function creates three subdirectories inside the specified 'savedir'
+        if they do not already exist. If the subdirectories already exist, it will not modify them.
+    """
     col_summary_name = 'col_summary'
     all_rows_name = 'all_rows'
     grid_name = 'gridplots'
@@ -557,7 +553,50 @@ def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,
     savedir_grids = os.path.join(savedir, grid_name)
     while not os.path.exists(savedir_grids):
         os.makedirs(savedir_grids)
+    return savedir_cols, savedir_rows, savedir_grids
 
+def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,
+              sq1df_off=None,  sq1_runfile_off=None,
+              cols=range(0, 16), flip_signs=False, manually_chosen_biases=None,
+              plot_all_rows=False, savedir='test_output',
+              # For unit conversion
+              convert_units=False, cfg=None, sa_data=None, sa_runfile=None,
+              # Debug options
+              verbose=False, show_plot=False):
+    """
+    Perform analysis on the provided data and generate plots.
+
+    Parameters:
+        sq1df_rson (DataFrame): Dataframe containing resonant data.
+        sq1_runfile_rson (str): Path to the runfile used for resonant data.
+        ctime (str or None): Custom timestamp for plot filenames.
+        sq1df_off (DataFrame or None): Dataframe containing off-resonance data.
+        sq1_runfile_off (str or None): Path to the runfile used for off-resonance data.
+        cols (range or list): Columns to analyze (default is range from 0 to 15).
+        flip_signs (bool): Whether to flip the signs of certain parameters (default is False).
+        manually_chosen_biases (dict or None): Manually chosen biases for each column (optional).
+        plot_all_rows (bool): Whether to plot individual rows (default is False).
+        savedir (str): Base directory to save output files (default is 'test_output').
+        convert_units (bool): Whether to convert units (default is False).
+        cfg (object or None): Configuration object (optional).
+        sa_data (object or None): SA data object (optional).
+        sa_runfile (object or None): SA runfile object (optional).
+        verbose (bool): Whether to print detailed information (default is False).
+        show_plot (bool): Whether to display plots interactively (default is False).
+
+    Returns:
+        None
+    """
+
+    # Some Options that can be changed
+
+    # bias_current, device_current, or naive
+    bias_choose_method = 'naive'
+    mod_thresh = 30
+    max_rows = None
+
+    
+    savedir_cols, savedir_rows, savedir_grids = setup_directories(savedir)
     # Start Analysis
     all_grids = setup_grids()
     fig = None
@@ -631,7 +670,7 @@ def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,
 
 
 def rs_driver(cfg, sa_data, sa_runfile, rsdf, rs_runfile, ctime=None,
-              rsdf_off=None,  rs_runfile_off=None, filter_sq1=True,
+              rsdf_off=None,  rs_runfile_off=None, filter_sq1=True, flip_signs=False,
               cols=range(0, 16), rows=range(0, 40)):
     """
     TODO: Needs maintenance
@@ -677,14 +716,15 @@ def rs_driver(cfg, sa_data, sa_runfile, rsdf, rs_runfile, ctime=None,
                     "Row does not correspond to chip: " + str(row))
             last_fig = (row == rows[-1])
             sq1df_row = sq1df_col[sq1df_col[rowname] == row]
-            ic_params = cp.calculate_ic_params(sq1df_row, rs_runfile,col, filter_sq1=filter_sq1, sq1_sgfilter_window_length=sq1_sgfilter_window_length)
+            ic_params = cp.calculate_ic_params(sq1df_row, rs_runfile,col, flip_signs=flip_signs,
+                                               filter_sq1=filter_sq1, sq1_sgfilter_window_length=sq1_sgfilter_window_length)
 
             # ic_params=calculate_icminmax(cfg, filter_sq1, row, col,  sq1_params, ssa_params,
             #                             sq1_sgfilter_window_length, sq1_sgfilter_poly_deg)
             sq1_params2 = None
             if(rsdf_off is not None):
-                sq1_params2 = cp.calculate_ic_params(rsdf_off, rs_runfile_off, cfg, col, row,
-                                                          ssa_params, filter_sq1=filter_sq1, sq1_sgfilter_window_length=sq1_sgfilter_window_length)
+                sq1_params2 = cp.calculate_ic_params(rsdf_off, rs_runfile_off, cfg, col, row, 
+                                                          ssa_params,  flip_signs=flip_signs,filter_sq1=filter_sq1, sq1_sgfilter_window_length=sq1_sgfilter_window_length)
 
                 # ic_params2=calculate_icminmax(cfg, filter_sq1, row, col,  sq1_params2, ssa_params,
                 #                              sq1_sgfilter_window_length, sq1_sgfilter_poly_deg)
@@ -807,7 +847,7 @@ def main():
         ctime = ctime+'_rsservo'
         rs_driver(cfg, sa_data, sa_runfile, rsservo_df, rsservo_runfile,
                   rsdf_off=rsservo_df_off,  rs_runfile_off=rsservo_runfile_off,
-                  filter_sq1=False, ctime=ctime,
+                  filter_sq1=False, ctime=ctime, flip_signs=flip_signs,
                   cols=cols, rows=rows)
 
 

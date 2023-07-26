@@ -23,6 +23,10 @@ unix systems: ` python ./code/squid_analysis.py -i -t ./input_data/rowsel_on_sma
 
 There are a few ways of choosing the optimal biases automatically, `naive`, `bias_current`, and `device_current`. Will add options for these soon.
 
+## RS Servo analysis
+` python ./code/squid_analysis.py -r -t ./input_data/rowsel_on_small/ `
+
+Same as standard crosstalk analysis, but `-r` instead of `-i` indicaes that you wish to run the rs_servo analysis instead
 
 ### See output plots in `output_data/`
 
