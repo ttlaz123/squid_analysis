@@ -32,7 +32,7 @@ def script_cols(startcols, numcols):
 
 
 def script_link(ctime, figs_dir):
-    script_str = "pager.link(\"#col\",\n"
+    script_str = "pager.link(\"#ic\",\n"
     script_str += "    {\n"
     script_str += "        'Col|col': cols,\n"
     script_str += "        'Row|row': rows,\n"
@@ -48,15 +48,21 @@ def script_link(ctime, figs_dir):
     script_str += "        ctime = params.run;\n"
     script_str += "        if (params.row == 'Summary') {\n"
     script_str += "            row = '_summary';\n"
+    script_str += "            row_folder = 'col_summary';\n"
     script_str += "        } else {\n"
     script_str += "            row = '_row' + params.row;\n"
+    script_str += "            row_folder = 'all_rows';\n"
     script_str += "        }\n"
     script_str += "        units = params.units;\n"
     script_str += "        if (units == 'uA') {\n"
     script_str += "            units = 'ua';\n"
+    script_str += "            units_folder = 'units_ua';\n"
+    script_str += "        } else if(units == 'dac'){\n"
+    script_str += "            units = 'DAC';\n"
+    script_str += "            units_folder = 'units_dac';\n"
     script_str += "        }\n"
-    script_str += f"        name = \"{figs_dir}\" + ctime + '_icminmax_units' + units + row + '_col' +\n"
-    script_str += "            params.col + '.png';\n"
+    script_str += f"        name = \"../output_data/\" + ctime + \"/\" + units_folder + \"/\" + row_folder + \"/\" + ctime + '_icminmax_units' + units + '_col' +\n"
+    script_str += "            params.col  + row+ '.png';\n"
     script_str += "        console.log(name);\n"
     script_str += "        return name;\n"
     script_str += "});\n"
@@ -76,9 +82,17 @@ def script_setparams(ctime):
 
 
 def script(ctime, rows, cols, figs_dir):
-    startcols = min(cols)
-    numrows = len(rows)
-    numcols = len(cols)
+    
+    if(isinstance(rows, int)):
+        numrows = rows
+    else:
+        numrows = len(rows)
+    if(isinstance(cols, int)):
+        numcols = cols 
+        startcols = 0
+    else:
+        numcols = len(cols)
+        startcols = min(cols)
     script_str = "<script type=\"text/javascript\">\n"
     script_str += script_pad()
     script_str += script_rows(numrows)
@@ -116,15 +130,20 @@ def auto_pager(rows, cols, ctime, convert_units=False,
     TODO In progress
     '''
     if(figs_dir is None):
-        figs_dir = os.path.join('output_data', str(ctime))
+        figs_dir = os.path.join('..','output_data')
     
-    figure_str = "<figure>\n"
+    figure_str = "<!DOCTYPE html>\n"
+    figure_str += "<body>\n"
+    figure_str +='<script type="text/javascript" src="scripts/pager.js"></script>\n'
+    figure_str +='<link rel="stylesheet" type="text/css" href="scripts/pager.css">\n'
+    figure_str += "<figure>\n"
     figure_str += (" <img alt=\"Squid Tuning Paramters\" "+
                    "id=\"ic\" src=\"#\" onerror=\"javascript:this.src='dne.png'\" />\n")
     figure_str += caption()
 
     figure_str += script(ctime, rows, cols, figs_dir)
     figure_str += "</figure>\n"
+    figure_str += "</body>\n"
 
     os.makedirs(html_dir, exist_ok=True)
 
@@ -140,3 +159,6 @@ def main():
     ## test run
 
     auto_pager(rows=41, cols=16, ctime=1684269423)
+
+if __name__ == '__main__':
+    main()

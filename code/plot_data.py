@@ -606,7 +606,7 @@ def tile_plot(num_rows, num_columns, data, label, title, vmin=0, vmax=20,
 
 
 def plot_rsservo_col(last_fig, col, chip_num, sq1_params, sq1_params2=None, ctime=None,
-                     s1b_minmax_ax=None, s1b_minmax_fig=None, show_plot=False):
+                     ax=None, fig=None, show_plot=False):
     '''
     TODO: needs maintenance
     plots the rs servo at the given bias point. 
@@ -622,52 +622,45 @@ def plot_rsservo_col(last_fig, col, chip_num, sq1_params, sq1_params2=None, ctim
     sq1_safb_servo = range(len(sq1_safb_servo_curves_dac))
     # print(sq1_safb_servo_curves_dac)
     # print(sq1_safb_servo)
-    if(s1b_minmax_ax is None):
-        s1b_minmax_fig, s1b_minmax_ax = plt.subplots(figsize=(8, 6))
+    if(ax is None):
+        fig, ax = plt.subplots(figsize=(8, 6))
     if(last_fig):
 
-        # s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
-        #        lw=2, label='SQ1 min(Imod)', color='blue', alpha=alpha)
-        s1b_minmax_ax.plot(
+        ax.plot(
             sq1_safb_servo, sq1_safb_servo_curves_dac, alpha=alpha, color=color, label='Chip Number: ' + str(chip_num))
         if(sq1_params2 is not None):
             sq1_safb_servo_curves_dac = sq1_params2['safb']
-            # s1b_minmax_ax.plot(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA,
-            #    lw=2, label='Ic,col', color='aqua', alpha=alpha)
-            s1b_minmax_ax.plot(
+            ax.plot(
                 sq1_safb_servo, sq1_safb_servo_curves_dac, alpha=alpha, color='aqua')
         handles, labels = plt.gca().get_legend_handles_labels()
         by_label = OrderedDict(zip(labels, handles))
-        leg = s1b_minmax_ax.legend(
+        leg = ax.legend(
             by_label.values(), by_label.keys(), loc='upper left', fontsize=8)
 
         for lh in leg.legendHandles:
             lh.set_alpha(1)
-        s1b_minmax_ax.set_ylabel('SAFB Current (DAC units)', fontsize=18)
-        s1b_minmax_ax.set_xlabel(
+        ax.set_ylabel('SAFB Current (DAC units)', fontsize=18)
+        ax.set_xlabel(
             'RS Current (DAC units)', fontsize=18)
 
-        # s1b_minmax_ax.set_ylim(0, 40)
-        s1b_minmax_fig.suptitle('RS Check Column ' + str(col))
-        s1b_minmax_fig.tight_layout()
+        fig.suptitle('RS Check Column ' + str(col))
+        fig.tight_layout()
         savename = str(ctime) + '_rs_summary_col' + str(col) + '.png'
         print('saving to: ' + os.path.join(savedir, savename))
-        s1b_minmax_fig.savefig(os.path.join(savedir, savename))
+        fig.savefig(os.path.join(savedir, savename))
         if(show_plot):
             plt.show()
         plt.close()
 
     else:
 
-        s1b_minmax_ax.plot(
+        ax.plot(
             sq1_safb_servo, sq1_safb_servo_curves_dac,  alpha=alpha, color=color, label='Chip Number: ' + str(chip_num))
 
-        # s1b_minmax_ax.plot([bias_limit, bias_limit], [0,sq1_safb_servo_biases_uA[-1] ], alpha=alpha, color='orange')
-        # s1b_minmax_ax.plot([0, sq1_safb_servo_biases_uA[-1]], [start_sq1imod_uA, start_sq1imod_uA ], alpha=alpha, color='orange')
         if(sq1_params2 is not None):
             sq1_safb_servo_curves_dac = sq1_params2['safb']
-            s1b_minmax_ax.plot(
+            ax.plot(
                 sq1_safb_servo, sq1_safb_servo_curves_dac, alpha=alpha, color='aqua')
         # plt.show()
 
-    return s1b_minmax_fig, s1b_minmax_ax
+    return fig, ax

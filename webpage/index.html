@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<body>
+<script type="text/javascript" src="scripts/pager.js"></script>
+<link rel="stylesheet" type="text/css" href="scripts/pager.css">
+<figure>
+ <img alt="Squid Tuning Paramters" id="ic" src="#" onerror="javascript:this.src='dne.png'" />
+ <figcaption>
+     <p>
+Green/aqua lines: Row selects off; when the green and aqua lines separate, thatindicates that the columns is turning on even though the switches are off.Red/blue lines: row selects on. Dark purple vertical linerepresents the amplitude of the maximum modulation when row select is on.The dotted thick pink line is thecrosstalk threshold and marks the bias current and device current wherea column turns on even when all the row selects are off. This is a signature ofpotential crosstalk. The small pink line represents the manually chosen biascurrent to maximize the modulation while keeping the SQ1 Max below thecrosstalk threshold (small pink line only exists on summary plots).
+      </p>
+ </figcaption>
+<script type="text/javascript">
+function pad(num, size) {
+    num = num.toString();
+    while (num.length < size) num = "0" + num;
+    return num;
+}
+
+const rows = [];
+numrows = 41
+for (let i = 0; i < numrows; i++) {
+    s = pad(i, 1);
+    rows[i] = s.concat('|', s);
+}
+
+rows[numrows] = 'Summary';
+
+const cols = [];
+startcols = 0
+numcols = 16
+for (let i = startcols; i < numcols; i++) {
+    s = pad(i, 1);
+    cols[i - startcols] = s.concat('|', s);
+}
+
+pager.link("#ic",
+    {
+        'Col|col': cols,
+        'Row|row': rows,
+        'Run|run': [
+            '1684269423|1684269423',
+        ],
+        'Units|units': [
+            'Microamps (warning, calibration very likely incorrect)|uA',
+            'DAC|dac'
+        ]
+    },
+    function (params) {
+        ctime = params.run;
+        if (params.row == 'Summary') {
+            row = '_summary';
+            row_folder = 'col_summary';
+        } else {
+            row = '_row' + params.row;
+            row_folder = 'all_rows';
+        }
+        units = params.units;
+        if (units == 'uA') {
+            units = 'ua';
+            units_folder = 'units_ua';
+        } else if(units == 'dac'){
+            units = 'DAC';
+            units_folder = 'units_dac';
+        }
+        name = "../output_data/" + ctime + "/" + units_folder + "/" + row_folder + "/" + ctime + '_icminmax_units' + units + '_col' +
+            params.col  + row+ '.png';
+        console.log(name);
+        return name;
+});
+pager.setparams(
+    {
+        'col': '0',
+        'row': 'Summary',
+        'run': '1684269423',
+        'units': 'dac'
+    }
+);
+
+</script>
+</figure>
+</body>

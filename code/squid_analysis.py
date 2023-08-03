@@ -682,7 +682,7 @@ def rs_driver(cfg, sa_data, sa_runfile, rsdf, rs_runfile, ctime=None,
     """
     TODO: Needs maintenance
     """
-    chip_starts = [0, 10, 20, 30, 41]
+    chip_starts = [0, 11, 21, 31, 41]
     sq1_sgfilter_window_length = 1
     sq1_sgfilter_poly_deg = 2
     calc_slopes = False
@@ -705,8 +705,8 @@ def rs_driver(cfg, sa_data, sa_runfile, rsdf, rs_runfile, ctime=None,
         if(ssa_params is None):
             print('No SSA params for Column: ' + str(col))
             
-        s1b_minmax_fig = None
-        s1b_minmax_ax = None
+        fig = None
+        ax = None
 
         for row in rows:
             chip_num = -1
@@ -726,23 +726,16 @@ def rs_driver(cfg, sa_data, sa_runfile, rsdf, rs_runfile, ctime=None,
             ic_params = cp.calculate_ic_params(sq1df_row, rs_runfile,col, flip_signs=flip_signs,
                                                filter_sq1=filter_sq1, sq1_sgfilter_window_length=sq1_sgfilter_window_length)
 
-            # ic_params=calculate_icminmax(cfg, filter_sq1, row, col,  sq1_params, ssa_params,
-            #                             sq1_sgfilter_window_length, sq1_sgfilter_poly_deg)
             sq1_params2 = None
             if(rsdf_off is not None):
                 sq1_params2 = cp.calculate_ic_params(rsdf_off, rs_runfile_off, cfg, col, row, 
                                                           ssa_params,  flip_signs=flip_signs,filter_sq1=filter_sq1, sq1_sgfilter_window_length=sq1_sgfilter_window_length)
 
-                # ic_params2=calculate_icminmax(cfg, filter_sq1, row, col,  sq1_params2, ssa_params,
-                #                              sq1_sgfilter_window_length, sq1_sgfilter_poly_deg)
-            # else:
-            #    ic_params2 = None
-            # pd.plot_icminmax(sq1_safb_servo_biases_uA, sq1_safb_servo_mins_sa_in_uA, sq1_safb_servo_maxs_sa_in_uA,
-             #     max_sq1imod_idx, max_sq1imod_uA)#, tune_ctime, col, row)
-            s1b_minmax_fig, s1b_minmax_ax = pd.plot_rsservo_col(last_fig, col, chip_num, ic_params,
+           
+            fig, ax = pd.plot_rsservo_col(last_fig, col, chip_num, ic_params,
                                                                 sq1_params2=sq1_params2, ctime=ctime,
-                                                                s1b_minmax_ax=s1b_minmax_ax,
-                                                                s1b_minmax_fig=s1b_minmax_fig)
+                                                                ax=ax,
+                                                                fig=fig)
 
 
 def save_subset(df, savename, rows=[28, 29, 30, 31, 32, 33], cols=[8, 9, 10, 11, 12]):
