@@ -19,6 +19,7 @@ import read_data as rd
 import plot_data as pd
 import calc_parameters as cp
 import calculate_slopes as cs
+import auto_pager as ap
 
 # we should figure out where these warnings are coming from some day
 import warnings
@@ -674,7 +675,8 @@ def ic_driver(sq1df_rson, sq1_runfile_rson, ctime=None,
 
     make_grids(all_grids, rows, cols, ctime,
                show_plot, savedir_grids, convert_units)
-
+    
+    ap.auto_pager(rows=rows, cols = cols, ctime=ctime)
 
 def rs_driver(cfg, sa_data, sa_runfile, rsdf, rs_runfile, ctime=None,
               rsdf_off=None,  rs_runfile_off=None, filter_sq1=True, flip_signs=False,

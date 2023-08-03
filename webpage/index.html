@@ -78,4 +78,59 @@ pager.setparams(
 
 </script>
 </figure>
-</body>
+<figure>
+    <img alt="Squid Tuning Paramter Grid Plots" id="grid" src="#" onerror="javascript:this.src='dne.png'" />
+ <figcaption>
+     <p>
+Grid plots
+     </p>
+ </figcaption>
+<script type="text/javascript">
+
+pager.link("#grid",
+    {
+        'Grid Type|grid':[
+            'Modulation at Chosen Bias|chosenmod',
+            'Ic,col|ic_col',
+            'Ic,max|ic_max',
+            'Optimal Bias|optbias',
+            'Modulation at optimal bias|optmod',
+            'Crosstalk Bias Limit|crosstalk',
+            'Ic,col-Ic,max|ic_maxcol_diff',
+            'Crosstalk bias limit - optimal bias|optbias_crosstalk_diff',
+        ],
+        'Run|run': [
+            '1684269423|1684269423',
+        ],
+        'Units|units': [
+            'Microamps (warning, calibration very likely incorrect)|uA',
+            'DAC|dac'
+        ]
+    },
+    function (params) {
+        ctime = params.run;
+
+        row_folder = 'gridplots';
+
+        units = params.units;
+        if (units == 'uA') {
+            units = 'ua';
+            units_folder = 'units_ua';
+        } else if(units == 'dac'){
+            units = 'unitsDAC';
+            units_folder = 'units_dac';
+        }
+        name = "../output_data//" + ctime + "/" + units_folder + "/" + row_folder + "/" + ctime + 
+                '_' + params.grid + '_' + units +'.png';
+        console.log(name);
+        return name;
+});
+pager.setparams(
+    {
+        'grid': 'ic_maxcol_diff',
+        'run': '1684269423',
+        'units': 'dac'
+    }
+);
+    </script>
+</figure></body>

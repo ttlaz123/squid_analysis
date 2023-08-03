@@ -61,13 +61,69 @@ def script_link(ctime, figs_dir):
     script_str += "            units = 'DAC';\n"
     script_str += "            units_folder = 'units_dac';\n"
     script_str += "        }\n"
-    script_str += f"        name = \"../output_data/\" + ctime + \"/\" + units_folder + \"/\" + row_folder + \"/\" + ctime + '_icminmax_units' + units + '_col' +\n"
+    script_str += f"        name = \"{figs_dir}\" + ctime + \"/\" + units_folder + \"/\" + row_folder + \"/\" + ctime + '_icminmax_units' + units + '_col' +\n"
     script_str += "            params.col  + row+ '.png';\n"
     script_str += "        console.log(name);\n"
     script_str += "        return name;\n"
     script_str += "});\n"
     return script_str
 
+def gridplots(ctime, figs_dir):
+    script_str = "<figure>\n"
+    script_str += "    <img alt=\"Squid Tuning Paramter Grid Plots\" id=\"grid\" src=\"#\" onerror=\"javascript:this.src='dne.png'\" />\n"
+    script_str += " <figcaption>\n"
+    script_str += "     <p>\n"
+    script_str += "Grid plots\n"
+    script_str += "     </p>\n"
+    script_str += " </figcaption>\n"
+    script_str += "<script type=\"text/javascript\">\n\n"
+    script_str += f"pager.link(\"#grid\",\n"
+    script_str += "    {\n"
+    script_str += "        'Grid Type|grid':[\n"
+    script_str += "            'Modulation at Chosen Bias|chosenmod',\n"
+    script_str += "            'Ic,col|ic_col',\n"
+    script_str += "            'Ic,max|ic_max',\n"
+    script_str += "            'Optimal Bias|optbias',\n"
+    script_str += "            'Modulation at optimal bias|optmod',\n"
+    script_str += "            'Crosstalk Bias Limit|crosstalk',\n"
+    script_str += "            'Ic,col-Ic,max|ic_maxcol_diff',\n"
+    script_str += "            'Crosstalk bias limit - optimal bias|optbias_crosstalk_diff',\n"
+    script_str += "        ],\n"
+    script_str += "        'Run|run': [\n"
+    script_str += f"            '{ctime}|{ctime}',\n"
+    script_str += "        ],\n"
+    script_str += "        'Units|units': [\n"
+    script_str += "            'Microamps (warning, calibration very likely incorrect)|uA',\n"
+    script_str += "            'DAC|dac'\n"
+    script_str += "        ]\n"
+    script_str += "    },\n"
+    script_str += "    function (params) {\n"
+    script_str += "        ctime = params.run;\n\n"
+    script_str += "        row_folder = 'gridplots';\n\n"
+    script_str += "        units = params.units;\n"
+    script_str += "        if (units == 'uA') {\n"
+    script_str += "            units = 'ua';\n"
+    script_str += "            units_folder = 'units_ua';\n"
+    script_str += "        } else if(units == 'dac'){\n"
+    script_str += "            units = 'unitsDAC';\n"
+    script_str += "            units_folder = 'units_dac';\n"
+    script_str += "        }\n"
+    script_str += f"        name = \"{figs_dir}/\" + ctime + \"/\" + units_folder + \"/\" + row_folder + \"/\" + ctime + \n"
+    script_str += "                '_' + params.grid + '_' + units +'.png';\n"
+    script_str += "        console.log(name);\n"
+    script_str += "        return name;\n"
+    script_str += "});\n"
+    script_str += f"pager.setparams(\n"
+    script_str += "    {\n"
+    script_str += "        'grid': 'ic_maxcol_diff',\n"
+    script_str += f"        'run': '{ctime}',\n"
+    script_str += "        'units': 'dac'\n"
+    script_str += "    }\n"
+    script_str += ");\n"
+    script_str += "    </script>\n"
+    script_str += "</figure>"
+    
+    return script_str
 
 def script_setparams(ctime):
     script_str = "pager.setparams(\n"
@@ -130,7 +186,7 @@ def auto_pager(rows, cols, ctime, convert_units=False,
     TODO In progress
     '''
     if(figs_dir is None):
-        figs_dir = os.path.join('..','output_data')
+        figs_dir = '../output_data/'
     
     figure_str = "<!DOCTYPE html>\n"
     figure_str += "<body>\n"
@@ -143,6 +199,7 @@ def auto_pager(rows, cols, ctime, convert_units=False,
 
     figure_str += script(ctime, rows, cols, figs_dir)
     figure_str += "</figure>\n"
+    figure_str += gridplots(ctime, figs_dir)
     figure_str += "</body>\n"
 
     os.makedirs(html_dir, exist_ok=True)
