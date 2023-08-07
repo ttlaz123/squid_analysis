@@ -291,7 +291,7 @@ def fill_all_ic_grids(all_grids, col, ic_params_rson_allrows,
         (ic_col, ic_min, ic_max, mod,
          optimal_bias, crosstalk_bias, manual_mod) = get_icmaxcolmod(
             ic_params_rson, ic_params_rsoff, manual_bias_idx=chosen_bias_idx)
-
+     
         ic_col_grid = fill_grid_data(
             ic_col, row, col, grid=ic_col_grid,
             max_rows=max_rows, max_cols=max_cols)
@@ -321,8 +321,8 @@ def fill_all_ic_grids(all_grids, col, ic_params_rson_allrows,
 
     all_grids['ic_max'] = ic_max_grid
     all_grids['ic_col'] = ic_col_grid
-    all_grids['mod'] = ic_maxcol_diff_grid
-    all_grids['ic_maxcol_diff'] = mod_grid
+    all_grids['mod'] = mod_grid
+    all_grids['ic_maxcol_diff'] = ic_maxcol_diff_grid
     all_grids['opt_bias'] = optimal_bias_grid
     all_grids['cross_bias'] = crosstalk_bias_grid
     all_grids['opt_cross_diff'] = bias_crosstalk_diff_grid
@@ -523,8 +523,8 @@ def setup_grids():
     chosen_mod_grid = None
     all_grids['ic_max'] = ic_max_grid
     all_grids['ic_col'] = ic_col_grid
-    all_grids['mod'] = ic_maxcol_diff_grid
-    all_grids['ic_maxcol_diff'] = mod_grid
+    all_grids['mod'] = mod_grid
+    all_grids['ic_maxcol_diff'] = ic_maxcol_diff_grid
     all_grids['opt_bias'] = optimal_bias_grid
     all_grids['cross_bias'] = crosstalk_bias_grid
     all_grids['opt_cross_diff'] = bias_crosstalk_diff_grid
