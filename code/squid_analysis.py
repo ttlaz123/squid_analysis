@@ -779,6 +779,8 @@ def main():
                         help='Whether to print out debug statements')
     parser.add_argument('-l', '--columns', type=int, default=16,
                         help='Number of columns to plot data for')
+    parser.add_argument('-a', '--plot_all_rows', action='store_true',
+                        help='If flagged, plots each row individually')
     args = parser.parse_args()
     flip_signs = args.flip_signs
     numcols = int(args.columns)
@@ -799,7 +801,7 @@ def main():
         rows = np.unique(all_rows)
         sq1df_off = None
         sq1_runfile_off = None
-        plot_all_rows = False
+        plot_all_rows = args.plot_all_rows
         if(args.ctime_off is not None):
             sq1df_off, sq1_runfile_off = rd.get_sq1_tune_data(
                 args.ctime_off, fast_csv_reading=fast_csv_reading)
