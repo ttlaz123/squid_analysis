@@ -1,7 +1,7 @@
 ####### CUSTUM IGNORES #######
 *.bias 
-*.png
 *.zip
+*.png
 
 input_data/*
 code/Lx_tilemapping/*
